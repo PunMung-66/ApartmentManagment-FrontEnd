@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
+import { useNavigate } from "react-router"
 import { useApi } from "./ApiContext"
 import { useToast } from "./ToastContext"
 import { type LoginRequest, type LoginResponse, type RegisterRequest, type User } from "@/lib/api"
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const navigate = useNavigate()
   const api = useApi()
   const { success, error: showError } = useToast()
 
@@ -61,9 +63,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         success("Login successful")
         
         if (userData.role === "STAFF") {
-          window.location.href = "/staff"
+          navigate("/staff")
         } else {
-          window.location.href = "/tenant"
+          navigate("/tenant")
         }
       }
     } catch (err: unknown) {
@@ -72,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false)
     }
-  }, [api, success, showError])
+  }, [api, success, showError, navigate])
 
   const register = useCallback(async (data: RegisterRequest) => {
     setIsLoading(true)
@@ -91,8 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     removeCookie("token")
     removeCookie("user")
     setUser(null)
-    window.location.href = "/login"
-  }, [])
+    navigate("/login")
+  }, [navigate])
 
   return (
     <AuthContext.Provider

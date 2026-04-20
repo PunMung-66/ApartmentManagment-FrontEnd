@@ -1,5 +1,4 @@
 import { createContext, useContext, useCallback, type ReactNode } from "react"
-import { useNavigate } from "react-router"
 import { API_BASE_URL, type ApiResponse } from "@/lib/api"
 import { useToast, type ToastType } from "./ToastContext"
 import { getCookie, removeCookie } from "@/lib/cookies"
@@ -43,6 +42,12 @@ export function ApiProvider({ children }: { children: ReactNode }) {
     throw { ...data, status: res.status }
   }, [showError, showSuccess])
 
+  const handleUnauthorized = useCallback(() => {
+    removeCookie("token")
+    removeCookie("user")
+    // Don't redirect here - let the component handle it
+  }, [])
+
   const get = useCallback(async <T,>(url: string, options?: FetchOptions): Promise<ApiResponse<T>> => {
     const token = getCookie("token")
     const headers: HeadersInit = {
@@ -58,13 +63,12 @@ export function ApiProvider({ children }: { children: ReactNode }) {
     })
 
     if (res.status === 401) {
-      removeCookie("token")
-      removeCookie("user")
-      window.location.href = "/login"
+      handleUnauthorized()
+      return handleResponse<T>(res, options?.skipToast)
     }
 
     return handleResponse<T>(res, options?.skipToast)
-  }, [handleResponse])
+  }, [handleResponse, handleUnauthorized])
 
   const post = useCallback(async <T,>(url: string, body?: unknown, options?: FetchOptions): Promise<ApiResponse<T>> => {
     const token = getCookie("token")
@@ -82,13 +86,12 @@ export function ApiProvider({ children }: { children: ReactNode }) {
     })
 
     if (res.status === 401) {
-      removeCookie("token")
-      removeCookie("user")
-      window.location.href = "/login"
+      handleUnauthorized()
+      return handleResponse<T>(res, options?.skipToast)
     }
 
     return handleResponse<T>(res, options?.skipToast)
-  }, [handleResponse])
+  }, [handleResponse, handleUnauthorized])
 
   const put = useCallback(async <T,>(url: string, body?: unknown, options?: FetchOptions): Promise<ApiResponse<T>> => {
     const token = getCookie("token")
@@ -106,13 +109,12 @@ export function ApiProvider({ children }: { children: ReactNode }) {
     })
 
     if (res.status === 401) {
-      removeCookie("token")
-      removeCookie("user")
-      window.location.href = "/login"
+      handleUnauthorized()
+      return handleResponse<T>(res, options?.skipToast)
     }
 
     return handleResponse<T>(res, options?.skipToast)
-  }, [handleResponse])
+  }, [handleResponse, handleUnauthorized])
 
   const del = useCallback(async <T,>(url: string, options?: FetchOptions): Promise<ApiResponse<T>> => {
     const token = getCookie("token")
@@ -129,13 +131,12 @@ export function ApiProvider({ children }: { children: ReactNode }) {
     })
 
     if (res.status === 401) {
-      removeCookie("token")
-      removeCookie("user")
-      window.location.href = "/login"
+      handleUnauthorized()
+      return handleResponse<T>(res, options?.skipToast)
     }
 
     return handleResponse<T>(res, options?.skipToast)
-  }, [handleResponse])
+  }, [handleResponse, handleUnauthorized])
 
   return (
     <ApiContext.Provider value={{ get, post, put, delete: del }}>
