@@ -18,6 +18,7 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined)
 const TOAST_STORAGE_KEY = "pending_toasts"
+const TOAST_DURATION = 4000
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
@@ -43,7 +44,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id))
-    }, 4000)
+    }, TOAST_DURATION)
   }, [])
 
   const success = useCallback((message: string) => showToast(message, "success"), [showToast])
@@ -61,8 +62,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload)
   }, [toasts])
 
+  const value: ToastContextType = { toasts, showToast, success, error }
+
   return (
-    <ToastContext.Provider value={{ toasts, showToast, success, error }}>
+    <ToastContext.Provider value={value}>
       {children}
       <ToastContainer toasts={toasts} setToasts={setToasts} />
     </ToastContext.Provider>
@@ -77,9 +80,24 @@ export function useToast() {
   return context
 }
 
-function ToastContainer({ toasts, setToasts }: { toasts: Toast[]; setToasts: React.Dispatch<React.SetStateAction<Toast[]>> }) {
+interface ToastContainerProps {
+  toasts: Toast[]
+  setToasts: React.Dispatch<React.SetStateAction<Toast[]>>
+}
+
+function ToastContainer({ toasts, setToasts }: ToastContainerProps) {
   const removeToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id))
+  }
+
+  const getToastStyles = (type: ToastType) => {
+    const baseStyles = "flex items-center gap-3 px-4 py-3 rounded-lg shadow-ambient"
+    const typeStyles = {
+      success: "bg-secondary text-secondary-foreground",
+      error: "bg-destructive text-destructive-foreground",
+      info: "bg-primary text-primary-foreground",
+    }
+    return `${baseStyles} ${typeStyles[type]}`
   }
 
   return (
@@ -91,39 +109,51 @@ function ToastContainer({ toasts, setToasts }: { toasts: Toast[]; setToasts: Rea
             initial={{ x: 100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 100, opacity: 0 }}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-ambient ${
-              toast.type === "success"
-                ? "bg-secondary text-secondary-foreground"
-                : toast.type === "error"
-                ? "bg-destructive text-destructive-foreground"
-                : "bg-primary text-primary-foreground"
-            }`}
+            className={getToastStyles(toast.type)}
           >
-            {toast.type === "success" && (
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-            )}
-            {toast.type === "error" && (
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="15" y1="9" x2="9" y2="15"/>
-                <line x1="9" y1="9" x2="15" y2="15"/>
-              </svg>
-            )}
+            <ToastIcon type={toast.type} />
             <span className="flex-1 font-body text-sm font-medium">{toast.message}</span>
             <button
               onClick={() => removeToast(toast.id)}
               className="opacity-70 hover:opacity-100 transition-opacity"
+              aria-label="Close toast"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
+              <CloseIcon />
             </button>
           </motion.div>
         ))}
       </AnimatePresence>
     </div>
+  )
+}
+
+function ToastIcon({ type }: { type: ToastType }) {
+  if (type === "success") {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    )
+  }
+
+  if (type === "error") {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="15" y1="9" x2="9" y2="15" />
+        <line x1="9" y1="9" x2="15" y2="15" />
+      </svg>
+    )
+  }
+
+  return null
+}
+
+function CloseIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
   )
 }

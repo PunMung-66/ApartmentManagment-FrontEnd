@@ -24,92 +24,100 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const api = useApi()
   const { success, error: showError } = useToast()
 
+  // Initialize user from cookies on mount
   useEffect(() => {
     const storedUser = getCookie("user")
     const token = getCookie("token")
-    
+
     if (storedUser && token) {
       setUser(JSON.parse(storedUser))
     }
     setIsLoading(false)
   }, [])
 
-  const login = useCallback(async (data: LoginRequest) => {
-    setIsLoading(true)
-    try {
-      const res = await api.post<LoginResponse>("/auth/login", data, { skipToast: true })
-      
-      if (res.data?.access_token) {
-        setCookie("token", res.data.access_token, 7)
-        
-        // Extract role from JWT token (secure - verified by backend)
-        const roleFromJWT = getTokenRole(res.data.access_token)
-        
-        // Use user data from backend response if available, otherwise create minimal user object
-        const userData: User = res.data.user || {
+  const createUserObject = (token: string, email: string, backendUser?: User): User => {
+    const roleFromJWT = getTokenRole(token)
+
+    return backendUser
+      ? { ...backendUser, role: roleFromJWT || backendUser.role }
+      : {
           id: 0,
           name: "",
           phone: "",
-          email: data.email,
+          email,
           role: roleFromJWT || "TENANT",
         }
-        
-        // Override role with JWT value to ensure security
-        userData.role = roleFromJWT || userData.role
-        
-        setUser(userData)
-        setCookie("user", JSON.stringify(userData), 7)
-        
-        success("Login successful")
-        
-        if (userData.role === "STAFF") {
-          navigate("/staff")
-        } else {
-          navigate("/tenant")
-        }
-      }
-    } catch (err: unknown) {
-      const error = err as { message?: string }
-      showError(error.message || "Login failed")
-    } finally {
-      setIsLoading(false)
-    }
-  }, [api, success, showError, navigate])
+  }
 
-  const register = useCallback(async (data: RegisterRequest) => {
-    setIsLoading(true)
-    try {
-      await api.post<User>("/auth/register", data, { skipToast: true })
-      success("Registration successful! Please login.")
-    } catch (err: unknown) {
-      const error = err as { message?: string }
-      showError(error.message || "Registration failed")
-    } finally {
-      setIsLoading(false)
-    }
-  }, [api, success, showError])
+  const saveUserSession = (token: string, user: User) => {
+    setCookie("token", token, 7)
+    setCookie("user", JSON.stringify(user), 7)
+    setUser(user)
+  }
 
-  const logout = useCallback(() => {
+  const clearUserSession = () => {
     removeCookie("token")
     removeCookie("user")
     setUser(null)
+  }
+
+  const navigateByRole = (role: string) => {
+    navigate(role === "STAFF" ? "/staff" : "/tenant")
+  }
+
+  const login = useCallback(
+    async (data: LoginRequest) => {
+      setIsLoading(true)
+      try {
+        const res = await api.post<LoginResponse>("/auth/login", data, { skipToast: true })
+
+        if (res.data?.access_token) {
+          const userData = createUserObject(res.data.access_token, data.email, res.data.user)
+          saveUserSession(res.data.access_token, userData)
+          success("Login successful")
+          navigateByRole(userData.role)
+        }
+      } catch (err: unknown) {
+        const error = err as { message?: string }
+        showError(error.message || "Login failed")
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [api, success, showError, navigate]
+  )
+
+  const register = useCallback(
+    async (data: RegisterRequest) => {
+      setIsLoading(true)
+      try {
+        await api.post<User>("/auth/register", data, { skipToast: true })
+        success("Registration successful! Please login.")
+      } catch (err: unknown) {
+        const error = err as { message?: string }
+        showError(error.message || "Registration failed")
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [api, success, showError]
+  )
+
+  const logout = useCallback(() => {
+    clearUserSession()
     navigate("/login")
   }, [navigate])
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        login,
-        register,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  )
+  const value: AuthContextType = {
+    user,
+    isAuthenticated: !!user,
+    isLoading,
+    login,
+    register,
+    logout,
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
