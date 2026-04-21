@@ -45,11 +45,12 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+  // Temporarily disabled StrictMode to prevent double API calls in development
+  // <StrictMode>
     <ToastProvider>
       <ApiProvider>
         <RouterProvider router={router} />
       </ApiProvider>
     </ToastProvider>
-  </StrictMode>,
+  // </StrictMode>,
 );
