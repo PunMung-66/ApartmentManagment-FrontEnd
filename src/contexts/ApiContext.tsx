@@ -29,6 +29,19 @@ export function ApiProvider({ children }: { children: ReactNode }) {
 
   const handleResponse = useCallback(
     async <T,>(res: Response, skipToast?: boolean): Promise<ApiResponse<T>> => {
+      // Log response for debugging
+      console.log('API Response:', {
+        url: res.url,
+        status: res.status,
+        statusText: res.statusText,
+        headers: Object.fromEntries(res.headers.entries())
+      })
+
+      // Handle 204 No Content (OPTIONS response)
+      if (res.status === 204) {
+        return { status: 204, message: 'No Content', data: undefined } as ApiResponse<T>
+      }
+
       const data = await res.json() as ApiResponse<T>
 
       if (res.ok && res.status >= 200 && res.status < 300) {
@@ -64,11 +77,20 @@ export function ApiProvider({ children }: { children: ReactNode }) {
       const token = getCookie("token")
       const headers = getHeaders(token, options?.headers)
 
+      console.log('Making API request:', {
+        url: `${API_BASE_URL}${url}`,
+        method,
+        headers,
+        hasToken: !!token
+      })
+
       const res = await fetch(`${API_BASE_URL}${url}`, {
         ...options,
         method,
         headers,
         body: body ? JSON.stringify(body) : undefined,
+        mode: 'cors',
+        credentials: 'include',
       })
 
       if (res.status === 401) {
