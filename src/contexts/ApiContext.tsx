@@ -127,6 +127,7 @@ export function ApiProvider({ children }: { children: ReactNode }) {
   return <ApiContext.Provider value={value}>{children}</ApiContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useApi() {
   const context = useContext(ApiContext)
   if (!context) {

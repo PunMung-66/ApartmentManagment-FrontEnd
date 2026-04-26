@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
+import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
 import { useNavigate } from "react-router"
 import { useApi } from "./ApiContext"
 import { useToast } from "./ToastContext"
@@ -18,22 +18,24 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const navigate = useNavigate()
-  const api = useApi()
-  const { success, error: showError } = useToast()
-
-  // Initialize user from cookies on mount
-  useEffect(() => {
+  const [user, setUser] = useState<User | null>(() => {
     const storedUser = getCookie("user")
     const token = getCookie("token")
 
-    if (storedUser && token) {
-      setUser(JSON.parse(storedUser))
+    if (!storedUser || !token) {
+      return null
     }
-    setIsLoading(false)
-  }, [])
+
+    try {
+      return JSON.parse(storedUser) as User
+    } catch {
+      return null
+    }
+  })
+  const [isLoading, setIsLoading] = useState(false)
+  const navigate = useNavigate()
+  const api = useApi()
+  const { success, error: showError } = useToast()
 
   const createUserObject = (token: string, email: string, backendUser?: User): User => {
     const roleFromJWT = getTokenRole(token)
@@ -61,9 +63,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }
 
-  const navigateByRole = (role: string) => {
+  const navigateByRole = useCallback((role: string) => {
     navigate(role === "STAFF" ? "/staff" : "/tenant")
-  }
+  }, [navigate])
 
   const login = useCallback(
     async (data: LoginRequest) => {
@@ -84,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false)
       }
     },
-    [api, success, showError, navigate]
+    [api, success, showError, navigateByRole]
   )
 
   const register = useCallback(
@@ -120,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext)
   if (!context) {

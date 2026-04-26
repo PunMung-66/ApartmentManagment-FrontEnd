@@ -1,7 +1,11 @@
 import { useNavigate } from "react-router"
 import { useApi } from "@/contexts/ApiContext"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { removeCookie } from "@/lib/cookies"
+
+interface ApiRequestOptions extends RequestInit {
+  skipToast?: boolean
+}
 
 export function useApiWithAuth() {
   const api = useApi()
@@ -17,34 +21,57 @@ export function useApiWithAuth() {
     throw error
   }, [navigate])
 
-  return {
-    get: async <T,>(url: string, options?: any) => {
+  const get = useCallback(
+    async <T,>(url: string, options?: ApiRequestOptions) => {
       try {
         return await api.get<T>(url, options)
       } catch (error) {
         return handleApiError(error)
       }
     },
-    post: async <T,>(url: string, body?: unknown, options?: any) => {
+    [api, handleApiError]
+  )
+
+  const post = useCallback(
+    async <T,>(url: string, body?: unknown, options?: ApiRequestOptions) => {
       try {
         return await api.post<T>(url, body, options)
       } catch (error) {
         return handleApiError(error)
       }
     },
-    put: async <T,>(url: string, body?: unknown, options?: any) => {
+    [api, handleApiError]
+  )
+
+  const put = useCallback(
+    async <T,>(url: string, body?: unknown, options?: ApiRequestOptions) => {
       try {
         return await api.put<T>(url, body, options)
       } catch (error) {
         return handleApiError(error)
       }
     },
-    delete: async <T,>(url: string, options?: any) => {
+    [api, handleApiError]
+  )
+
+  const del = useCallback(
+    async <T,>(url: string, options?: ApiRequestOptions) => {
       try {
         return await api.delete<T>(url, options)
       } catch (error) {
         return handleApiError(error)
       }
     },
-  }
+    [api, handleApiError]
+  )
+
+  return useMemo(
+    () => ({
+      get,
+      post,
+      put,
+      delete: del,
+    }),
+    [get, post, put, del]
+  )
 }
