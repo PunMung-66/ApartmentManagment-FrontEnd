@@ -4,7 +4,7 @@ import { useApiWithAuth } from "@/hooks/useApiWithAuth";
 import type { Room, RoomStats, FloorGroup } from "@/types/room";
 import { Card } from "@/components/ui/card";
 import { StaffSidebar } from "@/components/StaffSidebar";
-import { ModalOverlay } from "../components/Reusable Component/ModalOverlay";
+import { ModalOverlay } from "../../components/Reusable Component/ModalOverlay";
 import {
   DialogClose,
   DialogHeader,
