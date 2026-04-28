@@ -4,6 +4,14 @@ import { useApiWithAuth } from "@/hooks/useApiWithAuth";
 import type { Room, RoomStats, FloorGroup } from "@/types/room";
 import { Card } from "@/components/ui/card";
 import { StaffSidebar } from "@/components/StaffSidebar";
+import { ModalOverlay } from "../components/Reusable Component/ModalOverlay";
+import {
+  DialogClose,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export default function FloorInventory() {
   const api = useApiWithAuth();
@@ -11,6 +19,7 @@ export default function FloorInventory() {
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [stats, setStats] = useState<RoomStats>({
     total: 0,
     available: 0,
@@ -40,15 +49,13 @@ export default function FloorInventory() {
       return acc;
     }, [] as FloorGroup[]);
 
-    // Sort by level ascending
     grouped.sort((a, b) => a.level - b.level);
 
-    // Sort rooms within each floor by room number
     grouped.forEach((group) => {
       group.rooms.sort((a, b) =>
         a.room_number.localeCompare(b.room_number, undefined, {
           numeric: true,
-        }),
+        })
       );
     });
 
@@ -111,7 +118,7 @@ export default function FloorInventory() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Mobile Header */}
       <header className="sticky top-0 z-40 border-b border-gray-200 bg-white px-4 py-3 lg:hidden">
         <div className="flex items-center justify-between">
@@ -125,14 +132,12 @@ export default function FloorInventory() {
             type="button"
             aria-label="Toggle sidebar menu"
             onClick={() => setIsSidebarOpen((prev) => !prev)}
-            className="rounded-lg border border-gray-200 bg-white p-2 text-gray-700 shadow-sm"
-          >
+            className="rounded-lg border border-gray-200 bg-white p-2 text-gray-700 shadow-sm">
             <svg
               className="h-5 w-5"
               fill="none"
               stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+              viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -154,7 +159,7 @@ export default function FloorInventory() {
         />
       )}
 
-      <div className="flex min-h-screen">
+      <div className="flex flex-1">
         <StaffSidebar
           user={user}
           isSidebarOpen={isSidebarOpen}
@@ -165,10 +170,9 @@ export default function FloorInventory() {
 
         {/* Main Content */}
         <main
-          className={`flex-1 px-4 pb-20 pt-4 md:px-6 md:pt-5 lg:px-5 lg:pt-4 ${
+          className={`flex flex-col flex-1 px-4 pb-20 pt-4 md:px-6 md:pt-5 lg:px-5 lg:pt-4 ${
             isSidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
-          }`}
-        >
+          }`}>
           {/* Header */}
           <div className="mb-5 md:mb-6 lg:mb-4">
             <h2 className="font-display text-xl font-bold text-gray-900 md:text-2xl lg:text-lg">
@@ -196,8 +200,7 @@ export default function FloorInventory() {
                     className="h-5 w-5 text-gray-600 lg:h-4 lg:w-4"
                     fill="none"
                     stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                    viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -224,8 +227,7 @@ export default function FloorInventory() {
                     className="h-5 w-5 text-teal-600 lg:h-4 lg:w-4"
                     fill="none"
                     stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                    viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -252,8 +254,7 @@ export default function FloorInventory() {
                     className="h-5 w-5 text-red-600 lg:h-4 lg:w-4"
                     fill="none"
                     stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                    viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -280,8 +281,7 @@ export default function FloorInventory() {
                     className="h-5 w-5 text-orange-600 lg:h-4 lg:w-4"
                     fill="none"
                     stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                    viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -305,14 +305,14 @@ export default function FloorInventory() {
             {floorGroups.map((floor) => (
               <section
                 key={floor.level}
-                className="rounded-xl bg-white p-4 shadow-sm md:p-5 lg:rounded-lg lg:p-3"
-              >
+                className="rounded-xl bg-white p-4 shadow-sm md:p-5 lg:rounded-lg lg:p-3">
                 <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3 lg:mb-3 lg:pb-2">
                   <h3 className="font-display text-lg font-bold text-gray-900 md:text-xl lg:text-sm">
                     Level {floor.level.toString().padStart(2, "0")}
                   </h3>
                   <span className="text-sm font-medium text-gray-500 lg:text-xs">
-                    {floor.rooms.length} {floor.rooms.length === 1 ? "Unit" : "Units"}
+                    {floor.rooms.length}{" "}
+                    {floor.rooms.length === 1 ? "Unit" : "Units"}
                   </span>
                 </div>
 
@@ -320,8 +320,10 @@ export default function FloorInventory() {
                   {floor.rooms.map((room) => (
                     <button
                       key={room.room_id}
-                      className={`relative rounded-lg border-2 p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm md:p-4 lg:p-2.5 ${getStatusColor(room.status)}`}
-                    >
+                      onClick={() => setSelectedRoom(room)}
+                      className={`relative rounded-lg border-2 p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm md:p-4 lg:p-2.5 ${getStatusColor(
+                        room.status
+                      )}`}>
                       <div className="mb-2.5 flex items-start justify-between lg:mb-2">
                         <span className="font-display text-base font-bold text-gray-900 md:text-lg lg:text-sm">
                           {room.room_number}
@@ -330,8 +332,7 @@ export default function FloorInventory() {
                           className="h-4 w-4 text-gray-400 lg:h-3.5 lg:w-3.5"
                           fill="none"
                           stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
+                          viewBox="0 0 24 24">
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -343,9 +344,12 @@ export default function FloorInventory() {
 
                       <div className="flex items-center gap-2">
                         <span
-                          className={`h-2.5 w-2.5 rounded-full ${getStatusBadgeColor(room.status)}`}
-                        ></span>
-                        <span className="text-sm font-semibold lg:text-xs">{room.status}</span>
+                          className={`h-2.5 w-2.5 rounded-full ${getStatusBadgeColor(
+                            room.status
+                          )}`}></span>
+                        <span className="text-sm font-semibold lg:text-xs">
+                          {room.status}
+                        </span>
                       </div>
                     </button>
                   ))}
@@ -355,11 +359,62 @@ export default function FloorInventory() {
           </div>
 
           {/* Footer */}
-          <footer className="mt-8 text-center text-xs text-gray-500 md:text-sm lg:mt-6 lg:text-[11px]">
+          <footer className="mt-auto mb-0 text-center text-xs text-gray-500 md:text-sm lg:text-[11px]">
             © 2024 Editorial Residence Apartments. All rights reserved.
           </footer>
         </main>
       </div>
+
+      {/* Room Detail Modal — single instance, outside the map loop */}
+      <ModalOverlay open={!!selectedRoom} onClose={() => setSelectedRoom(null)}>
+        {selectedRoom && (
+          <>
+            <DialogHeader>
+              <DialogTitle>Room {selectedRoom.room_number}</DialogTitle>
+            </DialogHeader>
+
+            <div className="grid gap-3 py-1">
+              <div className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 text-sm">
+                <span className="font-medium text-muted-foreground">Level</span>
+                <span className="text-foreground">
+                  {selectedRoom.level.toString().padStart(2, "0")}
+                </span>
+
+                <span className="font-medium text-muted-foreground">
+                  Status
+                </span>
+                <span className="flex items-center gap-2">
+                  <span
+                    className={`h-2 w-2 rounded-full ${getStatusBadgeColor(
+                      selectedRoom.status
+                    )}`}
+                  />
+                  <span className="font-semibold">{selectedRoom.status}</span>
+                </span>
+
+                <span className="font-medium text-muted-foreground">
+                  Created At
+                </span>
+                <span className="text-foreground">
+                  {new Date(selectedRoom.created_at).toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            <DialogFooter>
+              {/* DialogClose triggers the dialog's onOpenChange, which ModalOverlay
+                  routes to onClose → setSelectedRoom(null) */}
+              <DialogClose asChild>
+                <Button
+                  variant="secondary"
+                  onClick={() => setSelectedRoom(null)}>
+                  Close
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          </>
+        )}
+      </ModalOverlay>
 
       {/* Floating Action Button */}
       <button className="fixed bottom-5 right-4 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-gray-900 text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl md:bottom-6 md:right-6 md:h-14 md:w-14 lg:bottom-5 lg:right-5 lg:h-10 lg:w-10">
@@ -367,8 +422,7 @@ export default function FloorInventory() {
           className="h-5 w-5 lg:h-4 lg:w-4"
           fill="none"
           stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+          viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
