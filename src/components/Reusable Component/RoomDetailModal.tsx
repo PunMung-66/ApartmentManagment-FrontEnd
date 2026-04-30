@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Room } from "@/types/room";
 import { ModalOverlay } from "@/components/Reusable Component/ModalOverlay";
+import { DeleteRoomDialog } from "@/components/Reusable Component/DeleteRoomDialog";
 import {
   DialogClose,
   DialogHeader,
@@ -37,11 +38,15 @@ function getStatusBadgeColor(status: Room["status"]) {
 
 export function RoomDetailModal({ room, onClose }: RoomDetailModalProps) {
   const api = useApiWithAuth();
+
+  // State management
   const [status, setStatus] = useState<Room["status"]>(() =>
     room ? room.status : "Available"
   );
   const [saving, setSaving] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
+  // Synchronize status when the room prop changes
   useEffect(() => {
     if (room) {
       setStatus(room.status);
@@ -62,7 +67,7 @@ export function RoomDetailModal({ room, onClose }: RoomDetailModalProps) {
       });
       onClose();
     } catch (err) {
-      // Error handling delegated to ApiContext / useApiWithAuth
+      // Error handling is managed by useApiWithAuth context
     } finally {
       setSaving(false);
     }
@@ -84,7 +89,6 @@ export function RoomDetailModal({ room, onClose }: RoomDetailModalProps) {
               </span>
 
               <span className="font-medium text-muted-foreground">Status</span>
-
               <div className="flex items-center gap-3">
                 <span
                   className={`h-2 w-2 rounded-full ${getStatusBadgeColor(
@@ -97,7 +101,6 @@ export function RoomDetailModal({ room, onClose }: RoomDetailModalProps) {
                   <SelectTrigger className="w-48">
                     <SelectValue />
                   </SelectTrigger>
-
                   <SelectContent>
                     <SelectItem value="Available">Available</SelectItem>
                     <SelectItem value="Occupied">Occupied</SelectItem>
@@ -112,6 +115,7 @@ export function RoomDetailModal({ room, onClose }: RoomDetailModalProps) {
               <span className="text-foreground">
                 {new Date(room.created_at).toLocaleString()}
               </span>
+
               <span className="font-medium text-muted-foreground">
                 Updated At
               </span>
@@ -122,6 +126,14 @@ export function RoomDetailModal({ room, onClose }: RoomDetailModalProps) {
           </div>
 
           <DialogFooter className="mt-4" showCloseButton={false}>
+            {/* Delete button pushed to the left using sm:mr-auto */}
+            <Button
+              variant="destructive"
+              onClick={() => setDeleteOpen(true)}
+              className="sm:mr-auto">
+              Delete
+            </Button>
+
             <Button
               variant="secondary"
               onClick={handleUpdate}
@@ -130,9 +142,22 @@ export function RoomDetailModal({ room, onClose }: RoomDetailModalProps) {
             </Button>
 
             <DialogClose asChild>
-              <Button variant="primary" onClick={onClose}>Close</Button>
+              <Button variant="primary" onClick={onClose}>
+                Close
+              </Button>
             </DialogClose>
           </DialogFooter>
+
+          {/* Separate Dialog for Deletion Confirmation */}
+          <DeleteRoomDialog
+            room={room}
+            open={deleteOpen}
+            onClose={() => setDeleteOpen(false)}
+            onSuccess={() => {
+              setDeleteOpen(false);
+              onClose(); // Close the detail modal after successful deletion
+            }}
+          />
         </>
       )}
     </ModalOverlay>

@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { StaffSidebar } from "@/components/StaffSidebar";
 import { useFloorInventory } from "../../components/Reusable Component/UseFloorInventory";
 import { RoomDetailModal } from "../../components/Reusable Component/RoomDetailModal";
+import { RoomAddModal } from "@/components/Reusable Component/RoomAddModal";
 
 function getStatusColor(status: Room["status"]) {
   switch (status) {
@@ -36,6 +37,9 @@ export default function FloorInventory() {
   const { user, logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  // New state for Add Modal
+  const [addOpen, setAddOpen] = useState(false);
 
   const { loading, stats, floorGroups, selectedRoom, setSelectedRoom } =
     useFloorInventory();
@@ -295,13 +299,26 @@ export default function FloorInventory() {
         </main>
       </div>
 
+      {/* Modals */}
       <RoomDetailModal
         room={selectedRoom}
         onClose={() => setSelectedRoom(null)}
       />
 
+      <RoomAddModal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onSuccess={() => {
+          setAddOpen(false);
+          // If your useFloorInventory hook provides a refresh function, call it here.
+          // Example: refresh();
+        }}
+      />
+
       {/* Floating Action Button */}
-      <button className="fixed bottom-5 right-4 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-gray-900 text-white shadow-lg transition-all hover:scale-110 hover:shadow-xl md:bottom-6 md:right-6 md:h-14 md:w-14 lg:bottom-5 lg:right-5 lg:h-10 lg:w-10">
+      <button
+        onClick={() => setAddOpen(true)}
+        className="fixed bottom-5 right-4 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-gray-900 text-white shadow-lg transition-all hover:scale-110 hover:shadow-xl md:bottom-6 md:right-6 md:h-14 md:w-14 lg:bottom-5 lg:right-5 lg:h-10 lg:w-10">
         <svg
           className="h-5 w-5 lg:h-4 lg:w-4"
           fill="none"
