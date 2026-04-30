@@ -1,113 +1,44 @@
-import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useApiWithAuth } from "@/hooks/useApiWithAuth";
-import type { Room, RoomStats, FloorGroup } from "@/types/room";
+import { useState } from "react";
+import type { Room } from "@/types/room";
 import { Card } from "@/components/ui/card";
 import { StaffSidebar } from "@/components/StaffSidebar";
-import { ModalOverlay } from "../../components/Reusable Component/ModalOverlay";
-import {
-  DialogClose,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { useFloorInventory } from "../../components/Reusable Component/UseFloorInventory";
+import { RoomDetailModal } from "../../components/Reusable Component/RoomDetailModal";
+
+function getStatusColor(status: Room["status"]) {
+  switch (status) {
+    case "Available":
+      return "bg-teal-50 text-teal-700 border-teal-200";
+    case "Occupied":
+      return "bg-red-50 text-red-700 border-red-200";
+    case "Maintenance":
+      return "bg-orange-50 text-orange-700 border-orange-200";
+    default:
+      return "bg-gray-50 text-gray-700 border-gray-200";
+  }
+}
+
+function getStatusBadgeColor(status: Room["status"]) {
+  switch (status) {
+    case "Available":
+      return "bg-teal-500";
+    case "Occupied":
+      return "bg-red-500";
+    case "Maintenance":
+      return "bg-orange-500";
+    default:
+      return "bg-gray-500";
+  }
+}
 
 export default function FloorInventory() {
-  const api = useApiWithAuth();
   const { user, logout } = useAuth();
-  const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
-  const [stats, setStats] = useState<RoomStats>({
-    total: 0,
-    available: 0,
-    occupied: 0,
-    maintenance: 0,
-  });
-  const [floorGroups, setFloorGroups] = useState<FloorGroup[]>([]);
 
-  function calculateStats(roomData: Room[]) {
-    const stats: RoomStats = {
-      total: roomData.length,
-      available: roomData.filter((r) => r.status === "Available").length,
-      occupied: roomData.filter((r) => r.status === "Occupied").length,
-      maintenance: roomData.filter((r) => r.status === "Maintenance").length,
-    };
-    setStats(stats);
-  }
-
-  function groupByFloor(roomData: Room[]) {
-    const grouped = roomData.reduce((acc, room) => {
-      const existing = acc.find((g) => g.level === room.level);
-      if (existing) {
-        existing.rooms.push(room);
-      } else {
-        acc.push({ level: room.level, rooms: [room] });
-      }
-      return acc;
-    }, [] as FloorGroup[]);
-
-    grouped.sort((a, b) => a.level - b.level);
-
-    grouped.forEach((group) => {
-      group.rooms.sort((a, b) =>
-        a.room_number.localeCompare(b.room_number, undefined, {
-          numeric: true,
-        })
-      );
-    });
-
-    setFloorGroups(grouped);
-  }
-
-  const fetchRooms = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await api.get<Room[]>("/rooms", { skipToast: true });
-
-      if (response.data) {
-        calculateStats(response.data);
-        groupByFloor(response.data);
-      }
-    } catch (error) {
-      console.error("[FloorInventory] Failed to fetch rooms:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [api]);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchRooms();
-  }, [fetchRooms]);
-
-  const getStatusColor = (status: Room["status"]) => {
-    switch (status) {
-      case "Available":
-        return "bg-teal-50 text-teal-700 border-teal-200";
-      case "Occupied":
-        return "bg-red-50 text-red-700 border-red-200";
-      case "Maintenance":
-        return "bg-orange-50 text-orange-700 border-orange-200";
-      default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
-    }
-  };
-
-  const getStatusBadgeColor = (status: Room["status"]) => {
-    switch (status) {
-      case "Available":
-        return "bg-teal-500";
-      case "Occupied":
-        return "bg-red-500";
-      case "Maintenance":
-        return "bg-orange-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
+  const { loading, stats, floorGroups, selectedRoom, setSelectedRoom } =
+    useFloorInventory();
 
   if (loading) {
     return (
@@ -168,12 +99,11 @@ export default function FloorInventory() {
           onLogout={logout}
         />
 
-        {/* Main Content */}
         <main
           className={`flex flex-col flex-1 px-4 pb-20 pt-4 md:px-6 md:pt-5 lg:px-5 lg:pt-4 ${
             isSidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
           }`}>
-          {/* Header */}
+          {/* Page Header */}
           <div className="mb-5 md:mb-6 lg:mb-4">
             <h2 className="font-display text-xl font-bold text-gray-900 md:text-2xl lg:text-lg">
               Floor Inventory
@@ -341,12 +271,12 @@ export default function FloorInventory() {
                           />
                         </svg>
                       </div>
-
                       <div className="flex items-center gap-2">
                         <span
                           className={`h-2.5 w-2.5 rounded-full ${getStatusBadgeColor(
                             room.status
-                          )}`}></span>
+                          )}`}
+                        />
                         <span className="text-sm font-semibold lg:text-xs">
                           {room.status}
                         </span>
@@ -365,59 +295,13 @@ export default function FloorInventory() {
         </main>
       </div>
 
-      {/* Room Detail Modal — single instance, outside the map loop */}
-      <ModalOverlay open={!!selectedRoom} onClose={() => setSelectedRoom(null)}>
-        {selectedRoom && (
-          <>
-            <DialogHeader>
-              <DialogTitle>Room {selectedRoom.room_number}</DialogTitle>
-            </DialogHeader>
-
-            <div className="grid gap-3 py-1">
-              <div className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 text-sm">
-                <span className="font-medium text-muted-foreground">Level</span>
-                <span className="text-foreground">
-                  {selectedRoom.level.toString().padStart(2, "0")}
-                </span>
-
-                <span className="font-medium text-muted-foreground">
-                  Status
-                </span>
-                <span className="flex items-center gap-2">
-                  <span
-                    className={`h-2 w-2 rounded-full ${getStatusBadgeColor(
-                      selectedRoom.status
-                    )}`}
-                  />
-                  <span className="font-semibold">{selectedRoom.status}</span>
-                </span>
-
-                <span className="font-medium text-muted-foreground">
-                  Created At
-                </span>
-                <span className="text-foreground">
-                  {new Date(selectedRoom.created_at).toLocaleString()}
-                </span>
-              </div>
-            </div>
-
-            <DialogFooter>
-              {/* DialogClose triggers the dialog's onOpenChange, which ModalOverlay
-                  routes to onClose → setSelectedRoom(null) */}
-              <DialogClose asChild>
-                <Button
-                  variant="secondary"
-                  onClick={() => setSelectedRoom(null)}>
-                  Close
-                </Button>
-              </DialogClose>
-            </DialogFooter>
-          </>
-        )}
-      </ModalOverlay>
+      <RoomDetailModal
+        room={selectedRoom}
+        onClose={() => setSelectedRoom(null)}
+      />
 
       {/* Floating Action Button */}
-      <button className="fixed bottom-5 right-4 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-gray-900 text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl md:bottom-6 md:right-6 md:h-14 md:w-14 lg:bottom-5 lg:right-5 lg:h-10 lg:w-10">
+      <button className="fixed bottom-5 right-4 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-gray-900 text-white shadow-lg transition-all hover:scale-110 hover:shadow-xl md:bottom-6 md:right-6 md:h-14 md:w-14 lg:bottom-5 lg:right-5 lg:h-10 lg:w-10">
         <svg
           className="h-5 w-5 lg:h-4 lg:w-4"
           fill="none"
