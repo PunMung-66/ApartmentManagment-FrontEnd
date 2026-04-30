@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { Room } from "@/types/room";
 import { ModalOverlay } from "@/components/Reusable Component/ModalOverlay";
 import {
@@ -14,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useApiWithAuth } from "@/hooks/useApiWithAuth";
 
 interface RoomDetailModalProps {
   room: Room | null;
@@ -34,6 +36,38 @@ function getStatusBadgeColor(status: Room["status"]) {
 }
 
 export function RoomDetailModal({ room, onClose }: RoomDetailModalProps) {
+  const api = useApiWithAuth();
+  const [status, setStatus] = useState<Room["status"]>(() =>
+    room ? room.status : "Available"
+  );
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (room) {
+      setStatus(room.status);
+    } else {
+      setStatus("Available");
+    }
+  }, [room]);
+
+  const handleUpdate = async () => {
+    if (!room) return;
+    if (status === room.status) return;
+    setSaving(true);
+    try {
+      await api.put(`/rooms/${room.room_id}`, {
+        room_number: room.room_number,
+        level: room.level,
+        status: status,
+      });
+      onClose();
+    } catch (err) {
+      // Error handling delegated to ApiContext / useApiWithAuth
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <ModalOverlay open={!!room} onClose={onClose}>
       {room && (
@@ -50,14 +84,27 @@ export function RoomDetailModal({ room, onClose }: RoomDetailModalProps) {
               </span>
 
               <span className="font-medium text-muted-foreground">Status</span>
-              <span className="flex items-center gap-2">
+
+              <div className="flex items-center gap-3">
                 <span
                   className={`h-2 w-2 rounded-full ${getStatusBadgeColor(
-                    room.status
+                    status
                   )}`}
                 />
-                <span className="font-semibold">{room.status}</span>
-              </span>
+                <Select
+                  value={status}
+                  onValueChange={(v) => setStatus(v as Room["status"])}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    <SelectItem value="Available">Available</SelectItem>
+                    <SelectItem value="Occupied">Occupied</SelectItem>
+                    <SelectItem value="Maintenance">Maintenance</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
               <span className="font-medium text-muted-foreground">
                 Created At
@@ -74,14 +121,16 @@ export function RoomDetailModal({ room, onClose }: RoomDetailModalProps) {
             </div>
           </div>
 
-          <DialogFooter className="flex justify-between items-center">
+          <DialogFooter className="mt-4" showCloseButton={false}>
+            <Button
+              variant="secondary"
+              onClick={handleUpdate}
+              disabled={saving || status === room.status}>
+              {saving ? "Updating..." : "Update"}
+            </Button>
+
             <DialogClose asChild>
-              <Button variant="secondary" onClick={onClose}>
-                Close
-              </Button>
-              <Button variant="primary" onClick={onClose}>
-                Update
-              </Button>
+              <Button variant="primary" onClick={onClose}>Close</Button>
             </DialogClose>
           </DialogFooter>
         </>
