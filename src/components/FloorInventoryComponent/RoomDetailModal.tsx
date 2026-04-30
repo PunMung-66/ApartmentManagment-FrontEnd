@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Room } from "@/types/room";
-import { ModalOverlay } from "@/components/Reusable Component/ModalOverlay";
-import { DeleteRoomDialog } from "@/components/Reusable Component/DeleteRoomDialog";
+import { ModalOverlay } from "@/components/ModalOverlay";
+import { DeleteRoomDialog } from "@/components/FloorInventoryComponent/DeleteRoomDialog";
 import {
   DialogClose,
   DialogHeader,

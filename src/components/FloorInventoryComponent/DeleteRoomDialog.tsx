@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Room } from "@/types/room";
-import { ModalOverlay } from "@/components/Reusable Component/ModalOverlay";
+import { ModalOverlay } from "@/components/ModalOverlay";
 import {
   DialogHeader,
   DialogTitle,
@@ -57,7 +57,8 @@ export function DeleteRoomDialog({
       <DialogHeader>
         <DialogTitle>Delete Room</DialogTitle>
         <DialogDescription>
-          This action cannot be undone. To confirm, type "DELETE" in the box below.
+          This action cannot be undone. To confirm, type "DELETE" in the box
+          below.
         </DialogDescription>
       </DialogHeader>
 
@@ -78,14 +79,15 @@ export function DeleteRoomDialog({
 
       <DialogFooter className="mt-4" showCloseButton={false}>
         <DialogClose asChild>
-          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
         </DialogClose>
 
         <Button
           variant="destructive"
           onClick={handleDelete}
-          disabled={deleting || confirmText !== "DELETE"}
-        >
+          disabled={deleting || confirmText !== "DELETE"}>
           {deleting ? "Deleting..." : "Delete"}
         </Button>
       </DialogFooter>

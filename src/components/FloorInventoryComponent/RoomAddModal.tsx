@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Room } from "@/types/room";
-import { ModalOverlay } from "@/components/Reusable Component/ModalOverlay";
+import { ModalOverlay } from "@/components/ModalOverlay";
 import {
   DialogHeader,
   DialogTitle,
@@ -120,7 +120,9 @@ export function RoomAddModal({ open, onClose, onSuccess }: RoomAddModalProps) {
         </Button>
 
         <DialogClose asChild>
-          <Button variant="primary" onClick={onClose}>Cancel</Button>
+          <Button variant="primary" onClick={onClose}>
+            Cancel
+          </Button>
         </DialogClose>
       </DialogFooter>
     </ModalOverlay>

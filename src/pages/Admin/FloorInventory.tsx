@@ -3,9 +3,9 @@ import { useState } from "react";
 import type { Room } from "@/types/room";
 import { Card } from "@/components/ui/card";
 import { StaffSidebar } from "@/components/StaffSidebar";
-import { useFloorInventory } from "../../components/Reusable Component/UseFloorInventory";
-import { RoomDetailModal } from "../../components/Reusable Component/RoomDetailModal";
-import { RoomAddModal } from "@/components/Reusable Component/RoomAddModal";
+import { useFloorInventory } from "../../components/UseFloorInventory";
+import { RoomDetailModal } from "../../components/FloorInventoryComponent/RoomDetailModal";
+import { RoomAddModal } from "@/components/FloorInventoryComponent/RoomAddModal";
 
 function getStatusColor(status: Room["status"]) {
   switch (status) {
@@ -293,7 +293,7 @@ export default function FloorInventory() {
           </div>
 
           {/* Footer */}
-          <footer className="mt-auto mb-0 text-center text-xs text-gray-500 md:text-sm lg:text-[11px]">
+          <footer className="mt-auto pt-5 mb-0 text-center text-xs text-gray-500 md:text-sm lg:text-[11px]">
             © 2024 Editorial Residence Apartments. All rights reserved.
           </footer>
         </main>
@@ -310,8 +310,6 @@ export default function FloorInventory() {
         onClose={() => setAddOpen(false)}
         onSuccess={() => {
           setAddOpen(false);
-          // If your useFloorInventory hook provides a refresh function, call it here.
-          // Example: refresh();
         }}
       />
 
