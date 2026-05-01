@@ -35,10 +35,11 @@ function getStatusBadgeColor(status: Room["status"]) {
 
 export default function FloorInventory() {
   const { user, logout } = useAuth();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Keep ONLY desktop collapse here (mobile handled by sidebar itself)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  // New state for Add Modal
+  // Add modal
   const [addOpen, setAddOpen] = useState(false);
 
   const { loading, stats, floorGroups, selectedRoom, setSelectedRoom } =
@@ -54,52 +55,13 @@ export default function FloorInventory() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Mobile Header */}
-      <header className="sticky top-0 z-40 border-b border-gray-200 bg-white px-4 py-3 lg:hidden">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-display text-base font-bold text-gray-900">
-              Editorial Residence
-            </h1>
-            <p className="text-xs text-gray-500">Staff Portal</p>
-          </div>
-          <button
-            type="button"
-            aria-label="Toggle sidebar menu"
-            onClick={() => setIsSidebarOpen((prev) => !prev)}
-            className="rounded-lg border border-gray-200 bg-white p-2 text-gray-700 shadow-sm">
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
-        </div>
-      </header>
-
-      {/* Mobile/Tablet Overlay */}
-      {isSidebarOpen && (
-        <button
-          type="button"
-          aria-label="Close sidebar"
-          onClick={() => setIsSidebarOpen(false)}
-          className="fixed inset-0 z-30 bg-black/40 lg:hidden"
-        />
-      )}
-
       <div className="flex flex-1">
         <StaffSidebar
           user={user}
-          isSidebarOpen={isSidebarOpen}
           isSidebarCollapsed={isSidebarCollapsed}
-          onToggleDesktopCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
+          onToggleDesktopCollapse={() =>
+            setIsSidebarCollapsed((prev) => !prev)
+          }
           onLogout={logout}
         />
 
@@ -117,173 +79,59 @@ export default function FloorInventory() {
             </p>
           </div>
 
-          {/* Stats Cards */}
-          <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 md:mb-6 md:grid-cols-2 md:gap-4 lg:mb-4 lg:grid-cols-4 lg:gap-3">
-            <Card variant="elevated" className="p-4 md:p-4 lg:p-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-gray-500 lg:text-[10px]">
-                    Total Rooms
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900 md:text-3xl lg:text-2xl">
-                    {stats.total}
-                  </p>
-                </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 md:h-11 md:w-11 lg:h-9 lg:w-9">
-                  <svg
-                    className="h-5 w-5 text-gray-600 lg:h-4 lg:w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                    />
-                  </svg>
-                </div>
-              </div>
+          {/* Stats */}
+          <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 md:mb-6 lg:grid-cols-4">
+            <Card className="p-4">
+              <p>Total Rooms</p>
+              <p className="text-xl font-bold">{stats.total}</p>
             </Card>
-
-            <Card variant="elevated" className="p-4 md:p-4 lg:p-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-gray-500 lg:text-[10px]">
-                    Available
-                  </p>
-                  <p className="text-2xl font-bold text-teal-600 md:text-3xl lg:text-2xl">
-                    {stats.available}
-                  </p>
-                </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-50 md:h-11 md:w-11 lg:h-9 lg:w-9">
-                  <svg
-                    className="h-5 w-5 text-teal-600 lg:h-4 lg:w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-              </div>
+            <Card className="p-4">
+              <p>Available</p>
+              <p className="text-xl font-bold text-teal-600">
+                {stats.available}
+              </p>
             </Card>
-
-            <Card variant="elevated" className="p-4 md:p-4 lg:p-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-gray-500 lg:text-[10px]">
-                    Occupied
-                  </p>
-                  <p className="text-2xl font-bold text-red-600 md:text-3xl lg:text-2xl">
-                    {stats.occupied}
-                  </p>
-                </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 md:h-11 md:w-11 lg:h-9 lg:w-9">
-                  <svg
-                    className="h-5 w-5 text-red-600 lg:h-4 lg:w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                </div>
-              </div>
+            <Card className="p-4">
+              <p>Occupied</p>
+              <p className="text-xl font-bold text-red-600">
+                {stats.occupied}
+              </p>
             </Card>
-
-            <Card variant="elevated" className="p-4 md:p-4 lg:p-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-gray-500 lg:text-[10px]">
-                    Maintenance
-                  </p>
-                  <p className="text-2xl font-bold text-orange-600 md:text-3xl lg:text-2xl">
-                    {stats.maintenance}
-                  </p>
-                </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50 md:h-11 md:w-11 lg:h-9 lg:w-9">
-                  <svg
-                    className="h-5 w-5 text-orange-600 lg:h-4 lg:w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                </div>
-              </div>
+            <Card className="p-4">
+              <p>Maintenance</p>
+              <p className="text-xl font-bold text-orange-600">
+                {stats.maintenance}
+              </p>
             </Card>
           </div>
 
-          {/* Floor Sections */}
-          <div className="space-y-4 md:space-y-5 lg:space-y-3">
+          {/* Floors */}
+          <div className="space-y-4">
             {floorGroups.map((floor) => (
-              <section
-                key={floor.level}
-                className="rounded-xl bg-white p-4 shadow-sm md:p-5 lg:rounded-lg lg:p-3">
-                <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3 lg:mb-3 lg:pb-2">
-                  <h3 className="font-display text-lg font-bold text-gray-900 md:text-xl lg:text-sm">
-                    Level {floor.level.toString().padStart(2, "0")}
-                  </h3>
-                  <span className="text-sm font-medium text-gray-500 lg:text-xs">
-                    {floor.rooms.length}{" "}
-                    {floor.rooms.length === 1 ? "Unit" : "Units"}
-                  </span>
+              <section key={floor.level} className="bg-white p-4 rounded-lg">
+                <div className="flex justify-between mb-3">
+                  <h3>Level {floor.level}</h3>
+                  <span>{floor.rooms.length} units</span>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-2 md:gap-3 lg:grid-cols-4 lg:gap-2.5">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                   {floor.rooms.map((room) => (
                     <button
                       key={room.room_id}
                       onClick={() => setSelectedRoom(room)}
-                      className={`relative rounded-lg border-2 p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm md:p-4 lg:p-2.5 ${getStatusColor(
+                      className={`p-3 border rounded ${getStatusColor(
                         room.status
                       )}`}>
-                      <div className="mb-2.5 flex items-start justify-between lg:mb-2">
-                        <span className="font-display text-base font-bold text-gray-900 md:text-lg lg:text-sm">
-                          {room.room_number}
-                        </span>
-                        <svg
-                          className="h-4 w-4 text-gray-400 lg:h-3.5 lg:w-3.5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
+                      <div className="flex justify-between">
+                        <span>{room.room_number}</span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 mt-2">
                         <span
-                          className={`h-2.5 w-2.5 rounded-full ${getStatusBadgeColor(
+                          className={`w-2 h-2 rounded-full ${getStatusBadgeColor(
                             room.status
                           )}`}
                         />
-                        <span className="text-sm font-semibold lg:text-xs">
-                          {room.status}
-                        </span>
+                        <span>{room.status}</span>
                       </div>
                     </button>
                   ))}
@@ -292,9 +140,8 @@ export default function FloorInventory() {
             ))}
           </div>
 
-          {/* Footer */}
-          <footer className="mt-auto pt-5 mb-0 text-center text-xs text-gray-500 md:text-sm lg:text-[11px]">
-            © 2024 Editorial Residence Apartments. All rights reserved.
+          <footer className="mt-auto text-center text-xs text-gray-500 pt-6">
+            © 2024 Editorial Residence Apartments
           </footer>
         </main>
       </div>
@@ -308,27 +155,14 @@ export default function FloorInventory() {
       <RoomAddModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
-        onSuccess={() => {
-          setAddOpen(false);
-        }}
+        onSuccess={() => setAddOpen(false)}
       />
 
-      {/* Floating Action Button */}
+      {/* FAB */}
       <button
         onClick={() => setAddOpen(true)}
-        className="fixed bottom-5 right-4 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-gray-900 text-white shadow-lg transition-all hover:scale-110 hover:shadow-xl md:bottom-6 md:right-6 md:h-14 md:w-14 lg:bottom-5 lg:right-5 lg:h-10 lg:w-10">
-        <svg
-          className="h-5 w-5 lg:h-4 lg:w-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
+        className="fixed bottom-5 right-5 w-12 h-12 bg-black text-white rounded-full">
+        +
       </button>
     </div>
   );
