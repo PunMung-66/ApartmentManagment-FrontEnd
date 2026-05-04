@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
+// React Router v7 — imports from "react-router", matching the rest of the project
+import { NavLink } from "react-router";
 import { Button } from "@/components/ui/button";
 import type { User } from "@/lib/api";
 
-// ─── Routing-ready nav config ─────────────────────────────────────────────────
-// When React Router is added: import { Link, useLocation } from "react-router-dom"
-// Replace <a href={item.path}> with <Link to={item.path}>
-// Replace activePath prop with: const { pathname } = useLocation()
+// ─── Nav config ───────────────────────────────────────────────────────────────
 
 interface NavItem {
   label: string;
@@ -16,7 +15,8 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   {
     label: "Floor Overview",
-    path: "/floor",
+    // index route — active when pathname is exactly /staff
+    path: "/staff",
     icon: (
       <svg
         className="h-4 w-4 shrink-0"
@@ -34,7 +34,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     label: "All Contracts",
-    path: "/contracts",
+    path: "/staff/contracts",
     icon: (
       <svg
         className="h-4 w-4 shrink-0"
@@ -52,7 +52,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     label: "All Users",
-    path: "/users",
+    path: "/staff/users",
     icon: (
       <svg
         className="h-4 w-4 shrink-0"
@@ -79,13 +79,6 @@ interface StaffSidebarProps {
   isSidebarCollapsed: boolean;
   onToggleDesktopCollapse: () => void;
   onLogout: () => void;
-  /**
-   * Current pathname for active nav highlighting.
-   * Pass window.location.pathname now; swap for useLocation().pathname when
-   * React Router is introduced. Keeping this as a prop prevents window access
-   * inside the component and makes it testable.
-   */
-  activePath?: string;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -96,9 +89,7 @@ export function StaffSidebar({
   isSidebarCollapsed,
   onToggleDesktopCollapse,
   onLogout,
-  activePath = "",
 }: StaffSidebarProps) {
-  // Internal mobile open/close — only used when isSidebarOpen is not provided externally
   const [isOpenInternal, setIsOpenInternal] = useState(false);
   const isOpen = isSidebarOpen ?? isOpenInternal;
 
@@ -119,7 +110,6 @@ export function StaffSidebar({
     };
   }, [isOpen]);
 
-  // ── Style helpers (desktop variants untouched) ───────────────────────────
   const navButtonBase =
     "flex w-full items-center rounded-lg text-left font-medium transition-colors";
   const navButtonSize = isSidebarCollapsed
@@ -128,12 +118,7 @@ export function StaffSidebar({
 
   return (
     <>
-      {/*
-       * ── MOBILE HAMBURGER ──────────────────────────────────────────────────
-       * FIX: changed from `sticky` inside a flow header to `fixed` so it stays
-       * visible when the user scrolls and is always reachable.
-       * z-50 keeps it above the sidebar (z-40) and overlay (z-30).
-       */}
+      {/* ── Mobile hamburger ──────────────────────────────────────────────── */}
       <button
         type="button"
         aria-label="Toggle sidebar menu"
@@ -153,12 +138,7 @@ export function StaffSidebar({
         </svg>
       </button>
 
-      {/*
-       * ── MOBILE OVERLAY ────────────────────────────────────────────────────
-       * FIX: overlay now calls closeSidebar() (internal setter) rather than
-       * setIsOpenInternal(false) directly, so it works consistently regardless
-       * of whether open state is internal or externally controlled.
-       */}
+      {/* ── Mobile overlay ────────────────────────────────────────────────── */}
       {isOpen && (
         <button
           type="button"
@@ -168,24 +148,18 @@ export function StaffSidebar({
         />
       )}
 
-      {/*
-       * ── SIDEBAR PANEL ─────────────────────────────────────────────────────
-       * FIX: added `overflow-hidden` to prevent the w-72 panel from creating
-       * a scrollable overflow region on small screens when translated off-screen.
-       * All lg: classes are preserved exactly as they were.
-       */}
+      {/* ── Sidebar panel ─────────────────────────────────────────────────── */}
       <aside
         className={`
           fixed inset-y-0 left-0 z-40 overflow-hidden
           transform transition-all duration-200
-          bg-white shadow-xl
-          w-72
+          bg-white shadow-xl w-72
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           lg:translate-x-0 lg:shadow-lg
           ${isSidebarCollapsed ? "lg:w-20" : "lg:w-64"}
         `}>
         <div className="flex h-full flex-col">
-          {/* ── Sidebar header (desktop collapse toggle) ── */}
+          {/* Sidebar header + desktop collapse toggle */}
           <div
             className={`border-b border-gray-100 px-4 py-4 lg:py-3 ${
               isSidebarCollapsed ? "lg:px-2.5" : "lg:px-4"
@@ -204,7 +178,6 @@ export function StaffSidebar({
                   </p>
                 </div>
               )}
-              {/* Desktop-only collapse toggle — hidden on mobile */}
               <button
                 type="button"
                 aria-label={
@@ -230,32 +203,34 @@ export function StaffSidebar({
             </div>
           </div>
 
-          {/* ── Nav ── */}
+          {/* ── Nav ──────────────────────────────────────────────────────── */}
           <nav
             className={`flex-1 space-y-1.5 py-3 ${
               isSidebarCollapsed ? "px-2" : "px-3"
             }`}>
-            {NAV_ITEMS.map((item) => {
-              const isActive = activePath === item.path;
-              return (
-                // Router swap point: replace <a href> with <Link to={item.path}>
-                <a
-                  key={item.path}
-                  href={item.path}
-                  title={item.label}
-                  className={`${navButtonBase} ${navButtonSize} text-sm lg:text-xs ${
+            {NAV_ITEMS.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                title={item.label}
+                // end prop on the /staff link prevents it staying active
+                // on /staff/contracts and /staff/users
+                end={item.path === "/staff"}
+                onClick={closeSidebar}
+                className={({ isActive }) =>
+                  `${navButtonBase} ${navButtonSize} text-sm lg:text-xs ${
                     isActive
                       ? "bg-primary text-white"
                       : "text-gray-700 hover:bg-gray-50"
-                  }`}>
-                  {item.icon}
-                  {!isSidebarCollapsed && item.label}
-                </a>
-              );
-            })}
+                  }`
+                }>
+                {item.icon}
+                {!isSidebarCollapsed && item.label}
+              </NavLink>
+            ))}
           </nav>
 
-          {/* ── User + Logout ── */}
+          {/* ── User + Logout ─────────────────────────────────────────────── */}
           <div
             className={`border-t border-gray-100 p-3 ${
               isSidebarCollapsed ? "lg:px-2" : ""
