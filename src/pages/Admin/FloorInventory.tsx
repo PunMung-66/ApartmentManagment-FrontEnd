@@ -59,9 +59,7 @@ export default function FloorInventory() {
         <StaffSidebar
           user={user}
           isSidebarCollapsed={isSidebarCollapsed}
-          onToggleDesktopCollapse={() =>
-            setIsSidebarCollapsed((prev) => !prev)
-          }
+          onToggleDesktopCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
           onLogout={logout}
         />
 
@@ -93,9 +91,7 @@ export default function FloorInventory() {
             </Card>
             <Card className="p-4">
               <p>Occupied</p>
-              <p className="text-xl font-bold text-red-600">
-                {stats.occupied}
-              </p>
+              <p className="text-xl font-bold text-red-600">{stats.occupied}</p>
             </Card>
             <Card className="p-4">
               <p>Maintenance</p>

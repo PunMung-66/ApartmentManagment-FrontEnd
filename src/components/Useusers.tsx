@@ -25,11 +25,11 @@ export function useUsers() {
       // Backend requires role query param — /users alone returns 400.
       // Fetch both roles in parallel and merge into one list.
       const [staffRes, tenantRes] = await Promise.all([
-        api.get<UserRecord[]>("/users?role=STAFF",   { skipToast: true }),
-        api.get<UserRecord[]>("/users?role=TENANT",  { skipToast: true }),
+        api.get<UserRecord[]>("/users?role=STAFF", { skipToast: true }),
+        api.get<UserRecord[]>("/users?role=TENANT", { skipToast: true }),
       ]);
 
-      const staff  = staffRes.data  ?? [];
+      const staff = staffRes.data ?? [];
       const tenant = tenantRes.data ?? [];
       setUsers([...staff, ...tenant]);
     } catch (err) {
