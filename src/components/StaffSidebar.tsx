@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Link, useLocation } from "react-router";
 import type { User } from "@/lib/api";
 
 interface StaffSidebarProps {
@@ -16,11 +17,19 @@ export function StaffSidebar({
   onToggleDesktopCollapse,
   onLogout,
 }: StaffSidebarProps) {
+  const location = useLocation();
+  const currentPath = location.pathname;
+
   const navButtonBase =
     "flex w-full items-center rounded-lg text-left font-medium transition-colors";
   const navButtonSize = isSidebarCollapsed
     ? "justify-center px-2 py-2"
     : "gap-2.5 px-3 py-2.5 lg:py-2";
+
+  const isActive = (path: string) => {
+    if (path === "/staff") return currentPath === "/staff";
+    return currentPath.startsWith(path);
+  };
 
   return (
     <aside
@@ -54,12 +63,19 @@ export function StaffSidebar({
             <button
               type="button"
               aria-label={
-                isSidebarCollapsed ? "Expand desktop sidebar" : "Collapse desktop sidebar"
+                isSidebarCollapsed
+                  ? "Expand desktop sidebar"
+                  : "Collapse desktop sidebar"
               }
               onClick={onToggleDesktopCollapse}
               className="hidden rounded-md border border-gray-200 p-1.5 text-gray-600 hover:bg-gray-50 lg:inline-flex"
             >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -76,11 +92,21 @@ export function StaffSidebar({
             isSidebarCollapsed ? "px-2" : "px-3"
           }`}
         >
-          <button
-            className={`${navButtonBase} ${navButtonSize} bg-primary text-sm text-white lg:text-xs`}
+          <Link
+            to="/staff"
+            className={`${navButtonBase} ${navButtonSize} ${
+              isActive("/staff") && !isActive("/staff/contracts") && !isActive("/staff/users")
+                ? "bg-primary text-sm text-white lg:text-xs"
+                : "text-sm text-gray-700 hover:bg-gray-50 lg:text-xs"
+            }`}
             title="Floor Overview"
           >
-            <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="h-4 w-4 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -89,13 +115,23 @@ export function StaffSidebar({
               />
             </svg>
             {!isSidebarCollapsed && "Floor Overview"}
-          </button>
+          </Link>
 
-          <button
-            className={`${navButtonBase} ${navButtonSize} text-sm text-gray-700 hover:bg-gray-50 lg:text-xs`}
+          <Link
+            to="/staff/contracts"
+            className={`${navButtonBase} ${navButtonSize} ${
+              isActive("/staff/contracts")
+                ? "bg-primary text-sm text-white lg:text-xs"
+                : "text-sm text-gray-700 hover:bg-gray-50 lg:text-xs"
+            }`}
             title="All Contracts"
           >
-            <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="h-4 w-4 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -104,13 +140,23 @@ export function StaffSidebar({
               />
             </svg>
             {!isSidebarCollapsed && "All Contracts"}
-          </button>
+          </Link>
 
-          <button
-            className={`${navButtonBase} ${navButtonSize} text-sm text-gray-700 hover:bg-gray-50 lg:text-xs`}
+          <Link
+            to="/staff/users"
+            className={`${navButtonBase} ${navButtonSize} ${
+              isActive("/staff/users")
+                ? "bg-primary text-sm text-white lg:text-xs"
+                : "text-sm text-gray-700 hover:bg-gray-50 lg:text-xs"
+            }`}
             title="All Users"
           >
-            <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="h-4 w-4 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -119,7 +165,7 @@ export function StaffSidebar({
               />
             </svg>
             {!isSidebarCollapsed && "All Users"}
-          </button>
+          </Link>
         </nav>
 
         <div
@@ -140,7 +186,9 @@ export function StaffSidebar({
                 <p className="truncate text-sm font-semibold text-gray-900 lg:text-xs">
                   {user?.name || "Property Manager"}
                 </p>
-                <p className="text-xs text-gray-500 lg:text-[11px]">Lead Admin</p>
+                <p className="text-xs text-gray-500 lg:text-[11px]">
+                  {user?.role ? user.role.charAt(0) + user.role.slice(1).toLowerCase() : 'Staff'}
+                </p>
               </div>
             )}
           </div>

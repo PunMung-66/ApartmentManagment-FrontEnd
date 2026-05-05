@@ -26,11 +26,12 @@ export interface RegisterRequest {
 }
 
 export interface User {
-  id: number
+  user_id: string
+  id?: number
   name: string
   phone: string
   email: string
   role: string
-  createdAt?: string
-  updatedAt?: string
+  created_at?: string
+  updated_at?: string
 }

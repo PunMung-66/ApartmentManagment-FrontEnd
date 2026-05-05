@@ -11,8 +11,7 @@ React + TypeScript + Vite frontend for the Apartment Management system.
 
 1. Copy `.env.example` to `.env`.
 2. Set the environment values:
-   - `VITE_API_BASE_URL`
-   - `VITE_API_PROXY_TARGET`
+   - `VITE_API_PROXY_TARGET` (e.g., `http://localhost:8080`)
 
 ## Install Dependencies
 

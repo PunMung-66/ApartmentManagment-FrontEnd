@@ -353,11 +353,6 @@ export default function FloorInventory() {
               </section>
             ))}
           </div>
-
-          {/* Footer */}
-          <footer className="mt-8 text-center text-xs text-gray-500 md:text-sm lg:mt-6 lg:text-[11px]">
-            © 2024 Editorial Residence Apartments. All rights reserved.
-          </footer>
         </main>
       </div>
 

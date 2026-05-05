@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/AuthContext"
+import Footer from "@/components/Footer"
 
 interface FormData {
   name: string
@@ -324,89 +325,93 @@ export default function LoginPage() {
   }
 
   return (
-    <motion.div
-      className="min-h-screen flex items-center justify-center bg-surface p-6"
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-    >
-      <motion.div variants={cardVariants} className="w-full max-w-md">
-        <Card variant="elevated" className="rounded-xl">
-          <CardHeader className="space-y-6 text-center pb-2">
-            <motion.div
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-            >
-              <CardTitle className="font-display text-2xl font-bold tracking-tight">
-                Apartment System (Yen Sabai)
-              </CardTitle>
-            </motion.div>
-            <motion.div
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-            >
-              <CardDescription className="font-body text-sm">
-                {isRegister ? "Create your sanctuary" : "Welcome home"}
-              </CardDescription>
-            </motion.div>
-          </CardHeader>
+    <div className="flex min-h-screen flex-col bg-surface">
+      <motion.div
+        className="flex flex-1 items-center justify-center p-6"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <motion.div variants={cardVariants} className="w-full max-w-md">
+          <Card variant="elevated" className="rounded-xl">
+            <CardHeader className="space-y-6 text-center pb-2">
+              <motion.div
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+              >
+                <CardTitle className="font-display text-2xl font-bold tracking-tight">
+                  Apartment System (Yen Sabai)
+                </CardTitle>
+              </motion.div>
+              <motion.div
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+              >
+                <CardDescription className="font-body text-sm">
+                  {isRegister ? "Create your sanctuary" : "Welcome home"}
+                </CardDescription>
+              </motion.div>
+            </CardHeader>
 
-          <CardContent>
-            <AnimatePresence mode="wait">
-              {isRegister ? (
-                <RegisterForm
-                  isLoading={isLoading}
-                  errors={errors}
-                  formData={formData}
-                  onFieldChange={updateField}
-                  onSubmit={handleRegister}
-                />
-              ) : (
-                <LoginForm
-                  isLoading={isLoading}
-                  errors={errors}
-                  formData={formData}
-                  onFieldChange={updateField}
-                  onSubmit={handleLogin}
-                />
-              )}
-            </AnimatePresence>
+            <CardContent>
+              <AnimatePresence mode="wait">
+                {isRegister ? (
+                  <RegisterForm
+                    isLoading={isLoading}
+                    errors={errors}
+                    formData={formData}
+                    onFieldChange={updateField}
+                    onSubmit={handleRegister}
+                  />
+                ) : (
+                  <LoginForm
+                    isLoading={isLoading}
+                    errors={errors}
+                    formData={formData}
+                    onFieldChange={updateField}
+                    onSubmit={handleLogin}
+                  />
+                )}
+              </AnimatePresence>
 
-            <motion.div
-              className="mt-6 text-center font-body text-sm text-on-surface-variant"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-            >
-              {isRegister ? (
-                <>
-                  Already have an account?{" "}
-                  <button
-                    type="button"
-                    className="text-secondary font-semibold hover:underline underline-offset-2"
-                    onClick={toggleAuthMode}
-                  >
-                    Sign in
-                  </button>
-                </>
-              ) : (
-                <>
-                  Don't have an account?{" "}
-                  <button
-                    type="button"
-                    className="text-secondary font-semibold hover:underline underline-offset-2"
-                    onClick={toggleAuthMode}
-                  >
-                    Register
-                  </button>
-                </>
-              )}
-            </motion.div>
-          </CardContent>
-        </Card>
+              <motion.div
+                className="mt-6 text-center font-body text-sm text-on-surface-variant"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                {isRegister ? (
+                  <>
+                    Already have an account?{" "}
+                    <button
+                      type="button"
+                      className="text-secondary font-semibold hover:underline underline-offset-2"
+                      onClick={toggleAuthMode}
+                    >
+                      Sign in
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    Don't have an account?{" "}
+                    <button
+                      type="button"
+                      className="text-secondary font-semibold hover:underline underline-offset-2"
+                      onClick={toggleAuthMode}
+                    >
+                      Register
+                    </button>
+                  </>
+                )}
+              </motion.div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </motion.div>
-    </motion.div>
+      <div className="mt-8"></div>
+      <Footer />
+    </div>
   )
 }
