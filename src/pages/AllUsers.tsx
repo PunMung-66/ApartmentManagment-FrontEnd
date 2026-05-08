@@ -4,11 +4,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useApiWithAuth } from "@/hooks/useApiWithAuth";
 import { useToast } from "@/contexts/ToastContext";
 import type { User } from "@/lib/api";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StaffSidebar } from "@/components/StaffSidebar";
+import { DataTable, type Column } from "@/components/ui/data-table";
 import {
   Trash2,
   Edit2,
@@ -273,6 +273,93 @@ export default function AllUsers() {
     }
   };
 
+  const userColumns = (callbacks: {
+    openViewModal: (u: UserWithCount) => void;
+    openEditModal: (u: UserWithCount) => void;
+    openDeleteModal: (u: UserWithCount) => void;
+    getRoleBadgeColor: (role: string) => string;
+  }): Column<UserWithCount>[] => [
+    {
+      header: "User Identity",
+      render: (u) => (
+        <button
+          onClick={() => callbacks.openViewModal(u)}
+          className="flex items-center gap-3 text-left group"
+        >
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white md:h-9 md:w-9">
+            {u.name.charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-gray-900 text-sm md:text-base truncate group-hover:text-primary transition-colors">
+              {u.name}
+            </p>
+            <p className="text-xs text-gray-500">
+              {u.phone || "N/A"}
+            </p>
+          </div>
+        </button>
+      ),
+    },
+    {
+      header: "Role",
+      render: (u) => (
+        <span
+          className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${callbacks.getRoleBadgeColor(u.role)}`}
+        >
+          {u.role}
+        </span>
+      ),
+    },
+    {
+      header: "Email Address",
+      className: "hidden md:table-cell",
+      render: (u) => (
+        <p className="text-sm text-gray-700 truncate">
+          {u.email}
+        </p>
+      ),
+    },
+    {
+      header: "Status",
+      className: "hidden md:table-cell",
+      render: () => (
+        <span className="inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+          <span className="h-2 w-2 shrink-0 rounded-full bg-green-500"></span>
+          Active
+        </span>
+      ),
+    },
+    {
+      header: "Actions",
+      className: "text-right",
+      render: (u) => (
+        <div className="flex items-center justify-end gap-2">
+          <button
+            onClick={() => callbacks.openViewModal(u)}
+            className="rounded-md border border-gray-200 p-2 text-gray-600 hover:bg-gray-100 transition-colors"
+            title="View details"
+          >
+            <Eye className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => callbacks.openEditModal(u)}
+            className="rounded-md border border-blue-200 p-2 text-blue-600 hover:bg-blue-50 transition-colors"
+            title="Edit user"
+          >
+            <Edit2 className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => callbacks.openDeleteModal(u)}
+            className="rounded-md border border-red-200 p-2 text-red-600 hover:bg-red-50 transition-colors"
+            title="Delete user"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "N/A";
     return new Date(dateStr).toLocaleDateString("en-US", {
@@ -408,112 +495,17 @@ export default function AllUsers() {
           </div>
 
           {/* Users Table */}
-          <div className="w-full max-w-full overflow-x-auto">
-            <Card className="p-0">
-              <table className="w-full min-w-[800px]">
-                <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50">
-                    <th className="px-4 py-3 md:px-6 md:py-4 text-left text-xs font-semibold uppercase text-gray-600 lg:text-[10px]">
-                      User Identity
-                    </th>
-                    <th className="px-4 py-3 md:px-6 md:py-4 text-left text-xs font-semibold uppercase text-gray-600 lg:text-[10px]">
-                      Role
-                    </th>
-                    <th className="hidden md:table-cell px-4 py-3 md:px-6 md:py-4 text-left text-xs font-semibold uppercase text-gray-600 lg:text-[10px]">
-                      Email Address
-                    </th>
-                    <th className="hidden md:table-cell px-4 py-3 md:px-6 md:py-4 text-left text-xs font-semibold uppercase text-gray-600 lg:text-[10px]">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 md:px-6 md:py-4 text-right text-xs font-semibold uppercase text-gray-600 lg:text-[10px]">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="px-4 py-8 md:px-6 text-center text-sm text-gray-500"
-                      >
-                        No users found
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredUsers.map((u) => (
-                      <tr
-                        key={u.user_id}
-                        className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="px-4 py-3 md:px-6 md:py-4">
-                          <button
-                            onClick={() => openViewModal(u)}
-                            className="flex items-center gap-3 text-left group"
-                          >
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white md:h-9 md:w-9">
-                              {u.name.charAt(0).toUpperCase()}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="font-medium text-gray-900 text-sm md:text-base truncate group-hover:text-primary transition-colors">
-                                {u.name}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {u.phone || "N/A"}
-                              </p>
-                            </div>
-                          </button>
-                        </td>
-                        <td className="px-4 py-3 md:px-6 md:py-4">
-                          <span
-                            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getRoleBadgeColor(u.role)}`}
-                          >
-                            {u.role}
-                          </span>
-                        </td>
-                        <td className="hidden md:table-cell px-4 py-3 md:px-6 md:py-4">
-                          <p className="text-sm text-gray-700 truncate">
-                            {u.email}
-                          </p>
-                        </td>
-                        <td className="hidden md:table-cell px-4 py-3 md:px-6 md:py-4 flex items-center justify-center">
-                          <span className="inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-                            <span className="h-2 w-2 shrink-0 rounded-full bg-green-500"></span>
-                            Active
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 md:px-6 md:py-4">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => openViewModal(u)}
-                              className="rounded-md border border-gray-200 p-2 text-gray-600 hover:bg-gray-100 transition-colors"
-                              title="View details"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => openEditModal(u)}
-                              className="rounded-md border border-blue-200 p-2 text-blue-600 hover:bg-blue-50 transition-colors"
-                              title="Edit user"
-                            >
-                              <Edit2 className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => openDeleteModal(u)}
-                              className="rounded-md border border-red-200 p-2 text-red-600 hover:bg-red-50 transition-colors"
-                              title="Delete user"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </Card>
-          </div>
+          <DataTable
+            columns={userColumns({
+              openViewModal,
+              openEditModal,
+              openDeleteModal,
+              getRoleBadgeColor,
+            })}
+            data={filteredUsers}
+            keyExtractor={(u) => u.user_id}
+            emptyMessage="No users found"
+          />
         </main>
       </div>
 
