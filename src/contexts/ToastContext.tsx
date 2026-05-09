@@ -21,21 +21,19 @@ const TOAST_STORAGE_KEY = "pending_toasts"
 const TOAST_DURATION = 4000
 
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<Toast[]>([])
-
-  // Load pending toasts from sessionStorage on mount
-  useEffect(() => {
+  const [toasts, setToasts] = useState<Toast[]>(() => {
     const pendingToasts = sessionStorage.getItem(TOAST_STORAGE_KEY)
     if (pendingToasts) {
       try {
         const parsed = JSON.parse(pendingToasts) as Toast[]
-        setToasts(parsed)
         sessionStorage.removeItem(TOAST_STORAGE_KEY)
+        return parsed
       } catch (error) {
         console.error("Failed to parse pending toasts:", error)
       }
     }
-  }, [])
+    return []
+  })
 
   const showToast = useCallback((message: string, type: ToastType) => {
     const id = Math.random().toString(36).substring(2, 9)
@@ -72,6 +70,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useToast() {
   const context = useContext(ToastContext)
   if (!context) {

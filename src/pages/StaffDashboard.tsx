@@ -1,5 +1,5 @@
-import FloorInventory from './FloorInventory'
+import { Outlet } from "react-router";
 
 export default function StaffDashboard() {
-  return <FloorInventory />
+  return <Outlet />;
 }
