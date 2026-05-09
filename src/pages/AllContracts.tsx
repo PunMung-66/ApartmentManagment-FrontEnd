@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useApiWithAuth } from "@/hooks/useApiWithAuth";
 import { useToast } from "@/contexts/ToastContext";
 import type { Contract } from "@/types/contract";
-import type { User, ApiResponse } from "@/lib/api";
+import type { User } from "@/lib/api";
 import type { Room } from "@/types/room";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,7 +51,9 @@ export default function AllContracts() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [contracts, setContracts] = useState<ContractWithDetails[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "Active" | "Inactive">("ALL");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "Active" | "Inactive"
+  >("ALL");
   const [stats, setStats] = useState({
     active: 0,
     inactive: 0,
@@ -61,7 +63,8 @@ export default function AllContracts() {
   const [rooms, setRooms] = useState<Room[]>([]);
 
   const [modalMode, setModalMode] = useState<ModalMode>(null);
-  const [selectedContract, setSelectedContract] = useState<ContractWithDetails | null>(null);
+  const [selectedContract, setSelectedContract] =
+    useState<ContractWithDetails | null>(null);
   const [formData, setFormData] = useState<FormData>({
     user_id: "",
     room_id: "",
@@ -82,7 +85,7 @@ export default function AllContracts() {
 
       const tenantPromises = uniqueUserIds.map(async (id) => {
         try {
-          const res = await api.get<ApiResponse<User>>(`/users/${id}`, { skipToast: true });
+          const res = await api.get<User>(`/users/${id}`, { skipToast: true });
           if (res.data) tenantMap.set(id, res.data);
         } catch {
           // ignore individual failures
@@ -91,7 +94,7 @@ export default function AllContracts() {
 
       const roomPromises = uniqueRoomIds.map(async (id) => {
         try {
-          const res = await api.get<ApiResponse<Room>>(`/rooms/${id}`, { skipToast: true });
+          const res = await api.get<Room>(`/rooms/${id}`, { skipToast: true });
           if (res.data) roomMap.set(id, res.data);
         } catch {
           // ignore individual failures
@@ -130,14 +133,20 @@ export default function AllContracts() {
   const fetchContracts = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await api.get<Contract[]>("/contracts", { skipToast: true });
+      const response = await api.get<Contract[]>("/contracts", {
+        skipToast: true,
+      });
 
       if (response.data) {
         const enriched = await enrichContracts(response.data);
         setContracts(enriched);
 
-        const activeCount = enriched.filter((c) => c.status === "Active").length;
-        const inactiveCount = enriched.filter((c) => c.status === "Inactive").length;
+        const activeCount = enriched.filter(
+          (c) => c.status === "Active",
+        ).length;
+        const inactiveCount = enriched.filter(
+          (c) => c.status === "Inactive",
+        ).length;
         setStats({ active: activeCount, inactive: inactiveCount });
       }
     } catch (error) {
@@ -197,7 +206,11 @@ export default function AllContracts() {
     if (!formData.user_id) errors.user_id = "Tenant is required";
     if (!formData.room_id) errors.room_id = "Room is required";
     if (!formData.start_date) errors.start_date = "Start date is required";
-    if (formData.start_date && formData.end_date && formData.end_date < formData.start_date)
+    if (
+      formData.start_date &&
+      formData.end_date &&
+      formData.end_date < formData.start_date
+    )
       errors.end_date = "End date must be after start date";
     if (!formData.status) errors.status = "Status is required";
     return errors;
@@ -278,7 +291,9 @@ export default function AllContracts() {
       }
 
       if (modalMode === "create") {
-        const response = await api.post("/contracts", payload, { skipToast: true });
+        const response = await api.post("/contracts", payload, {
+          skipToast: true,
+        });
         showSuccess(response.message || "Contract created successfully");
       } else if (modalMode === "edit" && selectedContract) {
         const response = await api.put(
@@ -306,9 +321,12 @@ export default function AllContracts() {
 
     setSubmitting(true);
     try {
-      const response = await api.delete(`/contracts/${selectedContract.contract_id}`, {
-        skipToast: true,
-      });
+      const response = await api.delete(
+        `/contracts/${selectedContract.contract_id}`,
+        {
+          skipToast: true,
+        },
+      );
       showSuccess(response.message || "Contract deleted successfully");
       closeModal();
       await fetchContracts();
@@ -343,9 +361,7 @@ export default function AllContracts() {
             <p className="font-medium text-gray-900 text-sm md:text-base truncate">
               {c.tenantName || "Unknown"}
             </p>
-            <p className="text-xs text-gray-500">
-              {c.tenantEmail || ""}
-            </p>
+            <p className="text-xs text-gray-500">{c.tenantEmail || ""}</p>
           </div>
         </div>
       ),
@@ -378,7 +394,9 @@ export default function AllContracts() {
         <span
           className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${getStatusBadgeColor(c.status)}`}
         >
-          <span className={`h-2 w-2 shrink-0 rounded-full ${c.status === "Active" ? "bg-green-500" : "bg-gray-500"}`} />
+          <span
+            className={`h-2 w-2 shrink-0 rounded-full ${c.status === "Active" ? "bg-green-500" : "bg-gray-500"}`}
+          />
           {c.status}
         </span>
       ),
@@ -629,7 +647,9 @@ function ContractViewModal({
             <h3 className="font-display text-lg font-bold text-gray-900">
               Contract Details
             </h3>
-            <p className="text-xs text-gray-500">{contract.tenantName || "Unknown"}</p>
+            <p className="text-xs text-gray-500">
+              {contract.tenantName || "Unknown"}
+            </p>
           </div>
         </div>
         <button
@@ -663,14 +683,18 @@ function ContractViewModal({
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
               Start Date
             </p>
-            <p className="text-sm text-gray-900">{formatDate(contract.start_date)}</p>
+            <p className="text-sm text-gray-900">
+              {formatDate(contract.start_date)}
+            </p>
           </div>
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
               End Date
             </p>
             <p className="text-sm text-gray-900">
-              {contract.end_date ? formatDate(contract.end_date) : "No end date"}
+              {contract.end_date
+                ? formatDate(contract.end_date)
+                : "No end date"}
             </p>
           </div>
         </div>
@@ -681,7 +705,9 @@ function ContractViewModal({
           <span
             className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${getStatusBadgeColor(contract.status)}`}
           >
-            <span className={`h-2 w-2 shrink-0 rounded-full ${contract.status === "Active" ? "bg-green-500" : "bg-gray-500"}`} />
+            <span
+              className={`h-2 w-2 shrink-0 rounded-full ${contract.status === "Active" ? "bg-green-500" : "bg-gray-500"}`}
+            />
             {contract.status}
           </span>
         </div>
@@ -798,7 +824,9 @@ function ContractFormModal({
               </option>
             ))}
           </select>
-          {errors.user_id && <p className="text-red-500 text-xs">{errors.user_id}</p>}
+          {errors.user_id && (
+            <p className="text-red-500 text-xs">{errors.user_id}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -818,7 +846,9 @@ function ContractFormModal({
               </option>
             ))}
           </select>
-          {errors.room_id && <p className="text-red-500 text-xs">{errors.room_id}</p>}
+          {errors.room_id && (
+            <p className="text-red-500 text-xs">{errors.room_id}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -833,7 +863,9 @@ function ContractFormModal({
               onChange={(e) => onFieldChange("start_date", e.target.value)}
               className={errors.start_date ? "border-red-500" : ""}
             />
-            {errors.start_date && <p className="text-red-500 text-xs">{errors.start_date}</p>}
+            {errors.start_date && (
+              <p className="text-red-500 text-xs">{errors.start_date}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="contract-end-date">End Date</Label>
@@ -844,7 +876,9 @@ function ContractFormModal({
               onChange={(e) => onFieldChange("end_date", e.target.value)}
               className={errors.end_date ? "border-red-500" : ""}
             />
-            {errors.end_date && <p className="text-red-500 text-xs">{errors.end_date}</p>}
+            {errors.end_date && (
+              <p className="text-red-500 text-xs">{errors.end_date}</p>
+            )}
           </div>
         </div>
 
@@ -861,7 +895,9 @@ function ContractFormModal({
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
           </select>
-          {errors.status && <p className="text-red-500 text-xs">{errors.status}</p>}
+          {errors.status && (
+            <p className="text-red-500 text-xs">{errors.status}</p>
+          )}
         </div>
       </div>
 

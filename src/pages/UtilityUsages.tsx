@@ -5,7 +5,7 @@ import { useApiWithAuth } from "@/hooks/useApiWithAuth";
 import { useToast } from "@/contexts/ToastContext";
 import type { UtilityUsage } from "@/types/utilityUsage";
 import type { Contract } from "@/types/contract";
-import type { Room, FloorGroup } from "@/types/room";
+import type { Room } from "@/types/room";
 import type { User } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,10 +14,8 @@ import { Label } from "@/components/ui/label";
 import { StaffSidebar } from "@/components/StaffSidebar";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import {
-  Plus,
   Search,
   X,
-  Eye,
   Edit2,
   Trash2,
   Info,
@@ -62,7 +60,8 @@ export default function UtilityUsages() {
   const [tenants, setTenants] = useState<User[]>([]);
 
   const [modalMode, setModalMode] = useState<ModalMode>(null);
-  const [selectedContract, setSelectedContract] = useState<ActiveContract | null>(null);
+  const [selectedContract, setSelectedContract] =
+    useState<ActiveContract | null>(null);
   const [selectedUsage, setSelectedUsage] = useState<UtilityUsage | null>(null);
   const [contractUsages, setContractUsages] = useState<UtilityUsage[]>([]);
   const [formData, setFormData] = useState<RecordFormData>({
@@ -80,12 +79,14 @@ export default function UtilityUsages() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [contractsRes, usagesRes, roomsRes, tenantsRes] = await Promise.all([
-        api.get<Contract[]>("/contracts", { skipToast: true }),
-        api.get<UtilityUsage[]>("/utility-usages", { skipToast: true }),
-        api.get<Room[]>("/rooms", { skipToast: true }),
-        api.get<User[]>("/users?role=TENANT", { skipToast: true }),
-      ]);
+      const [contractsRes, usagesRes, roomsRes, tenantsRes] = await Promise.all(
+        [
+          api.get<Contract[]>("/contracts", { skipToast: true }),
+          api.get<UtilityUsage[]>("/utility-usages", { skipToast: true }),
+          api.get<Room[]>("/rooms", { skipToast: true }),
+          api.get<User[]>("/users?role=TENANT", { skipToast: true }),
+        ],
+      );
 
       if (contractsRes.data) setContracts(contractsRes.data);
       if (usagesRes.data) setUsages(usagesRes.data);
@@ -99,7 +100,8 @@ export default function UtilityUsages() {
   }, [api]);
 
   useEffect(() => {
-    fetchData();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void fetchData();
   }, [fetchData]);
 
   const roomMap = useMemo(() => {
@@ -139,25 +141,36 @@ export default function UtilityUsages() {
           latestUsage: latestUsageByContract.get(c.contract_id),
         } as ActiveContract;
       })
-      .sort((a, b) => (a.roomLevel || 0) - (b.roomLevel || 0) || (a.roomNumber || "").localeCompare(b.roomNumber || "", undefined, { numeric: true }));
+      .sort(
+        (a, b) =>
+          (a.roomLevel || 0) - (b.roomLevel || 0) ||
+          (a.roomNumber || "").localeCompare(b.roomNumber || "", undefined, {
+            numeric: true,
+          }),
+      );
   }, [contracts, roomMap, tenantMap, latestUsageByContract]);
 
   const floorGroups = useMemo(() => {
-    const grouped = activeContracts.reduce((acc, c) => {
-      const level = c.roomLevel || 0;
-      const existing = acc.find((g) => g.level === level);
-      if (existing) {
-        existing.contracts.push(c);
-      } else {
-        acc.push({ level, contracts: [c] });
-      }
-      return acc;
-    }, [] as { level: number; contracts: ActiveContract[] }[]);
+    const grouped = activeContracts.reduce(
+      (acc, c) => {
+        const level = c.roomLevel || 0;
+        const existing = acc.find((g) => g.level === level);
+        if (existing) {
+          existing.contracts.push(c);
+        } else {
+          acc.push({ level, contracts: [c] });
+        }
+        return acc;
+      },
+      [] as { level: number; contracts: ActiveContract[] }[],
+    );
 
     grouped.sort((a, b) => a.level - b.level);
     grouped.forEach((g) => {
       g.contracts.sort((a, b) =>
-        (a.roomNumber || "").localeCompare(b.roomNumber || "", undefined, { numeric: true }),
+        (a.roomNumber || "").localeCompare(b.roomNumber || "", undefined, {
+          numeric: true,
+        }),
       );
     });
     return grouped;
@@ -177,7 +190,11 @@ export default function UtilityUsages() {
           tenantName: tenant?.name || "Unknown",
         };
       })
-      .filter(Boolean) as (UtilityUsage & { roomNumber: string; roomLevel: number; tenantName: string })[];
+      .filter(Boolean) as (UtilityUsage & {
+      roomNumber: string;
+      roomLevel: number;
+      tenantName: string;
+    })[];
   }, [usages, contracts, roomMap, tenantMap]);
 
   const filteredUsages = useMemo(() => {
@@ -202,7 +219,9 @@ export default function UtilityUsages() {
   const isCurrentMonth = (dateStr: string) => {
     const d = new Date(dateStr);
     const now = new Date();
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    return (
+      d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+    );
   };
 
   const validateRecordForm = (): FormErrors => {
@@ -392,9 +411,7 @@ export default function UtilityUsages() {
     },
     {
       header: "Tenant",
-      render: (u) => (
-        <p className="text-sm text-gray-700">{u.tenantName}</p>
-      ),
+      render: (u) => <p className="text-sm text-gray-700">{u.tenantName}</p>,
     },
     {
       header: "Water",
@@ -514,8 +531,8 @@ export default function UtilityUsages() {
                 </h2>
                 <p className="mt-1 text-sm text-gray-600 md:text-sm lg:text-xs">
                   {activeContracts.length} Active{" "}
-                  {activeContracts.length === 1 ? "Contract" : "Contracts"} &middot;{" "}
-                  {usages.length} Total{" "}
+                  {activeContracts.length === 1 ? "Contract" : "Contracts"}{" "}
+                  &middot; {usages.length} Total{" "}
                   {usages.length === 1 ? "Record" : "Records"}
                 </p>
               </div>
@@ -553,7 +570,8 @@ export default function UtilityUsages() {
                   <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-thin lg:grid lg:grid-cols-3 xl:grid-cols-4 lg:gap-2.5 lg:overflow-visible lg:snap-none">
                     {floor.contracts.map((c) => {
                       const hasUsage = !!c.latestUsage;
-                      const recent = hasUsage && isCurrentMonth(c.latestUsage!.record_date);
+                      const recent =
+                        hasUsage && isCurrentMonth(c.latestUsage!.record_date);
                       return (
                         <div
                           key={c.contract_id}
@@ -835,7 +853,9 @@ function RecordFormModal({
               min={0}
               placeholder="0"
               value={formData.old_electric_unit}
-              onChange={(e) => onFieldChange("old_electric_unit", e.target.value)}
+              onChange={(e) =>
+                onFieldChange("old_electric_unit", e.target.value)
+              }
               className={errors.old_electric_unit ? "border-red-500" : ""}
             />
             {errors.old_electric_unit && (
@@ -852,7 +872,9 @@ function RecordFormModal({
               min={0}
               placeholder="0"
               value={formData.new_electric_unit}
-              onChange={(e) => onFieldChange("new_electric_unit", e.target.value)}
+              onChange={(e) =>
+                onFieldChange("new_electric_unit", e.target.value)
+              }
               className={errors.new_electric_unit ? "border-red-500" : ""}
             />
             {errors.new_electric_unit && (
@@ -1035,7 +1057,8 @@ function DeleteModal({
                 Room #{contract.roomNumber} &middot; {contract.tenantName}
               </p>
               <p className="text-xs text-gray-500">
-                Water: {usage.old_water_unit}→{usage.new_water_unit} | Electric: {usage.old_electric_unit}→{usage.new_electric_unit}
+                Water: {usage.old_water_unit}→{usage.new_water_unit} | Electric:{" "}
+                {usage.old_electric_unit}→{usage.new_electric_unit}
               </p>
             </div>
           </div>

@@ -9,15 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StaffSidebar } from "@/components/StaffSidebar";
-import {
-  Plus,
-  X,
-  Eye,
-  Edit2,
-  Trash2,
-  Info,
-  Loader2,
-} from "lucide-react";
+import { Plus, X, Edit2, Trash2, Info, Loader2 } from "lucide-react";
 
 type ModalMode = "create" | "edit" | "view" | "delete" | null;
 
@@ -140,7 +132,8 @@ export default function FloorInventory() {
 
   const validateForm = (): FormErrors => {
     const errors: FormErrors = {};
-    if (!formData.room_number.trim()) errors.room_number = "Room number is required";
+    if (!formData.room_number.trim())
+      errors.room_number = "Room number is required";
     if (formData.level === "" || Number(formData.level) < 1)
       errors.level = "Level is required and must be at least 1";
     return errors;
@@ -173,7 +166,8 @@ export default function FloorInventory() {
     setRoomHasContract(room.status === "Occupied");
     setModalMode("edit");
 
-    api.get<unknown[]>(`/rooms/${room.room_id}/contracts`, { skipToast: true })
+    api
+      .get<unknown[]>(`/rooms/${room.room_id}/contracts`, { skipToast: true })
       .then((res) => {
         if (res.data) setRoomHasContract(res.data.length > 0);
       })
@@ -497,7 +491,8 @@ export default function FloorInventory() {
                     Level {floor.level.toString().padStart(2, "0")}
                   </h3>
                   <span className="text-sm font-medium text-gray-500 lg:text-xs">
-                    {floor.rooms.length} {floor.rooms.length === 1 ? "Unit" : "Units"}
+                    {floor.rooms.length}{" "}
+                    {floor.rooms.length === 1 ? "Unit" : "Units"}
                   </span>
                 </div>
 
@@ -531,7 +526,9 @@ export default function FloorInventory() {
                         <span
                           className={`h-2.5 w-2.5 rounded-full ${getStatusBadgeColor(room.status)}`}
                         ></span>
-                        <span className="text-sm font-semibold lg:text-xs">{room.status}</span>
+                        <span className="text-sm font-semibold lg:text-xs">
+                          {room.status}
+                        </span>
                       </div>
                     </button>
                   ))}
@@ -662,7 +659,9 @@ function RoomViewModal({
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
               Room Number
             </p>
-            <p className="text-sm text-gray-900 font-medium">{room.room_number}</p>
+            <p className="text-sm text-gray-900 font-medium">
+              {room.room_number}
+            </p>
           </div>
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
@@ -684,7 +683,9 @@ function RoomViewModal({
                   : "bg-orange-100 text-orange-700"
             }`}
           >
-            <span className={`h-2 w-2 shrink-0 rounded-full ${getStatusBadgeColor(room.status)}`} />
+            <span
+              className={`h-2 w-2 shrink-0 rounded-full ${getStatusBadgeColor(room.status)}`}
+            />
             {room.status}
           </span>
         </div>
@@ -806,7 +807,9 @@ function RoomFormModal({
             onChange={(e) => onFieldChange("room_number", e.target.value)}
             className={errors.room_number ? "border-red-500" : ""}
           />
-          {errors.room_number && <p className="text-red-500 text-xs">{errors.room_number}</p>}
+          {errors.room_number && (
+            <p className="text-red-500 text-xs">{errors.room_number}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -822,7 +825,9 @@ function RoomFormModal({
             onChange={(e) => onFieldChange("level", e.target.value)}
             className={errors.level ? "border-red-500" : ""}
           />
-          {errors.level && <p className="text-red-500 text-xs">{errors.level}</p>}
+          {errors.level && (
+            <p className="text-red-500 text-xs">{errors.level}</p>
+          )}
         </div>
 
         {mode === "edit" && (
@@ -835,7 +840,9 @@ function RoomFormModal({
               className="h-9 w-full min-w-0 rounded-md border border-input/20 bg-transparent px-3 py-2 font-body text-sm text-foreground transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
             >
               {statusOptions.map((opt) => (
-                <option key={opt} value={opt}>{opt}</option>
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
               ))}
             </select>
           </div>
@@ -914,7 +921,8 @@ function RoomDeleteModal({
           </div>
         </div>
         <p className="mt-3 text-xs text-red-500 font-medium">
-          This action cannot be undone. Rooms with existing contracts cannot be deleted.
+          This action cannot be undone. Rooms with existing contracts cannot be
+          deleted.
         </p>
       </div>
 

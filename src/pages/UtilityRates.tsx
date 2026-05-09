@@ -9,16 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StaffSidebar } from "@/components/StaffSidebar";
-import {
-  Plus,
-  X,
-  Eye,
-  Edit2,
-  Trash2,
-  Info,
-  Loader2,
-  Zap,
-} from "lucide-react";
+import { Plus, X, Eye, Edit2, Trash2, Info, Loader2, Zap } from "lucide-react";
 
 type ModalMode = "create" | "edit" | "view" | "delete" | null;
 
@@ -68,7 +59,8 @@ export default function UtilityRates() {
   }, [api]);
 
   useEffect(() => {
-    fetchRates();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void fetchRates();
   }, [fetchRates]);
 
   const sortedRates = useMemo(() => {
@@ -419,11 +411,9 @@ export default function UtilityRates() {
                               Period {rate.period}
                             </p>
                             <p className="text-xs text-gray-500">
-                              Water ฿
-                              {formatCurrency(rate.water_rate)} &middot; Elec
-                              ฿
-                              {formatCurrency(rate.electric_rate)} &middot;
-                              Common ฿{formatCurrency(rate.common_fee)}
+                              Water ฿{formatCurrency(rate.water_rate)} &middot;
+                              Elec ฿{formatCurrency(rate.electric_rate)}{" "}
+                              &middot; Common ฿{formatCurrency(rate.common_fee)}
                             </p>
                           </div>
                         </div>
@@ -589,7 +579,9 @@ function ViewModal({
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
               Created
             </p>
-            <p className="text-sm text-gray-900">{formatDate(rate.created_at)}</p>
+            <p className="text-sm text-gray-900">
+              {formatDate(rate.created_at)}
+            </p>
           </div>
         </div>
         <div className="pt-2 border-t border-gray-100">
