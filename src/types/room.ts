@@ -6,7 +6,6 @@ export interface Room {
   status: 'Available' | 'Occupied' | 'Maintenance'
   created_at: string
   updated_at: string
-  deleted_at?: string | null
 }
 
 export interface RoomStats {

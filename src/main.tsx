@@ -10,6 +10,9 @@ import TenantDashboard from "./pages/TenantDashboard.tsx";
 import AllUsers from "./pages/AllUsers.tsx";
 import FloorInventory from "./pages/FloorInventory.tsx";
 import AllContracts from "./pages/AllContracts.tsx";
+import UtilityRates from "./pages/UtilityRates.tsx";
+import UtilityUsages from "./pages/UtilityUsages.tsx";
+import Bills from "./pages/Bills.tsx";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { RootLayout } from "./components/RootLayout";
 import { ToastProvider } from "./contexts/ToastContext";
@@ -46,6 +49,18 @@ const router = createBrowserRouter([
           {
             path: "users",
             element: <AllUsers />,
+          },
+          {
+            path: "utility-rates",
+            element: <UtilityRates />,
+          },
+          {
+            path: "utility-usages",
+            element: <UtilityUsages />,
+          },
+          {
+            path: "bills",
+            element: <Bills />,
           },
         ],
       },
