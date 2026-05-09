@@ -1,10 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "$VITE_API_PROXY_TARGET/:path*"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
