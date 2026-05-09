@@ -8,6 +8,12 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
 
+    define: {
+      "import.meta.env.VITE_API_BASE_URL": JSON.stringify(
+        process.env.VITE_API_BASE_URL || env.VITE_API_BASE_URL || "/api",
+      ),
+    },
+
     server: {
       proxy: {
         "/api": {
