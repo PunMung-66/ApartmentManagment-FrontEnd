@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "http://3.80.58.141:8080/:path*"
+      "destination": "$VITE_API_PROXY_TARGET/:path*"
     },
     {
       "source": "/(.*)",
