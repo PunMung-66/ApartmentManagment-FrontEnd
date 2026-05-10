@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { API_BASE_URL } from "@/lib/api";
 import { getCookie } from "@/lib/cookies";
+import BillDetailModal from "@/components/ui/bill-detail-modal"
 import SlipPreviewModal from "@/components/ui/slip-preview-modal"
 import {
   Search,
@@ -18,6 +19,7 @@ import {
   Home,
   AlertCircle,
   Eye,
+  FileText,
 } from "lucide-react";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -38,6 +40,7 @@ export default function TenantDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [uploadingBillId, setUploadingBillId] = useState<string | null>(null);
   const [previewSlipUrl, setPreviewSlipUrl] = useState<string | null>(null);
+  const [selectedDetailBill, setSelectedDetailBill] = useState<Bill | null>(null);
   const uploadBillIdRef = useRef<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -137,6 +140,18 @@ export default function TenantDashboard() {
 
   const columns: Column<Bill>[] = [
     {
+      header: "Bill",
+      render: (b) => (
+        <button
+          onClick={() => setSelectedDetailBill(b)}
+          className="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-primary hover:bg-primary/10 transition-colors"
+          title="View bill details"
+        >
+          <FileText className="h-4 w-4" />
+        </button>
+      ),
+    },
+    {
       header: "Period",
       render: (b) => (
         <p className="text-sm font-medium text-gray-900">
@@ -227,6 +242,20 @@ export default function TenantDashboard() {
           slipUrl={previewSlipUrl}
           onClose={() => setPreviewSlipUrl(null)}
         />
+      )}
+
+      {selectedDetailBill && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden">
+            <BillDetailModal
+              bill={selectedDetailBill}
+              onClose={() => setSelectedDetailBill(null)}
+              onPreviewSlip={(url) => setPreviewSlipUrl(url)}
+              formatCurrency={formatCurrency}
+              formatDate={formatDate}
+            />
+          </div>
+        </div>
       )}
 
       {/* Header */}
