@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StaffSidebar } from "@/components/StaffSidebar";
 import { DataTable, type Column } from "@/components/ui/data-table";
+import SlipPreviewModal from "@/components/ui/slip-preview-modal"
 import {
   Plus,
   Search,
@@ -22,7 +23,7 @@ import {
   Info,
   Loader2,
   FileText,
-  ExternalLink,
+  Eye,
 } from "lucide-react";
 
 interface EnrichedBill extends Bill {
@@ -54,6 +55,7 @@ export default function Bills() {
 
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
+  const [previewSlipUrl, setPreviewSlipUrl] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     room_id: "",
     contract_id: "",
@@ -351,15 +353,13 @@ export default function Bills() {
       header: "Slip",
       render: (b) =>
         b.bill_slip ? (
-          <a
-            href={b.bill_slip.slip_url}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => setPreviewSlipUrl(b.bill_slip!.slip_url)}
             className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700"
           >
-            <ExternalLink className="h-3 w-3" />
+            <Eye className="h-3 w-3" />
             View
-          </a>
+          </button>
         ) : (
           <span className="text-xs text-gray-400">—</span>
         ),
@@ -409,7 +409,7 @@ export default function Bills() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-display text-base font-bold text-gray-900">
-              Editorial Residence
+              Yensabai
             </h1>
             <p className="text-xs text-gray-500">Staff Portal</p>
           </div>
@@ -576,8 +576,16 @@ export default function Bills() {
                 <ViewBillModal
                   bill={selectedBill as EnrichedBill}
                   onClose={closeModal}
+                  onPreviewSlip={(url) => setPreviewSlipUrl(url)}
                   formatCurrency={formatCurrency}
                   formatDate={formatDate}
+                />
+              )}
+
+              {previewSlipUrl && (
+                <SlipPreviewModal
+                  slipUrl={previewSlipUrl}
+                  onClose={() => setPreviewSlipUrl(null)}
                 />
               )}
 
@@ -775,14 +783,19 @@ function GenerateBillModal({
 function ViewBillModal({
   bill,
   onClose,
+  onPreviewSlip,
   formatCurrency,
   formatDate,
 }: {
   bill: EnrichedBill;
   onClose: () => void;
+  onPreviewSlip: (url: string) => void;
   formatCurrency: (v: number) => string;
   formatDate: (s: string) => string;
 }) {
+  const waterUsage = bill.new_water_unit - bill.old_water_unit;
+  const electricUsage = bill.new_electric_unit - bill.old_electric_unit;
+
   return (
     <>
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
@@ -819,37 +832,57 @@ function ViewBillModal({
           </p>
         </div>
 
-        <div className="rounded-lg bg-gray-50 p-4 space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Rent Fee</span>
-            <span className="font-medium text-gray-900">
-              ฿{formatCurrency(bill.rent_fee)}
-            </span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Water Fee</span>
-            <span className="font-medium text-blue-700">
-              ฿{formatCurrency(bill.water_fee)}
-            </span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Electric Fee</span>
-            <span className="font-medium text-amber-700">
-              ฿{formatCurrency(bill.electricity_fee)}
-            </span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Common Fee</span>
-            <span className="font-medium text-teal-700">
-              ฿{formatCurrency(bill.common_fee)}
-            </span>
-          </div>
-          <div className="border-t border-gray-200 pt-2 flex justify-between text-sm font-bold">
-            <span className="text-gray-700">Total</span>
-            <span className="text-gray-900">
-              ฿{formatCurrency(bill.total_amount)}
-            </span>
-          </div>
+        {/* Usage & Rate Breakdown Table */}
+        <div className="overflow-hidden rounded-lg border border-gray-200">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-100 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-3 py-2">Item</th>
+                <th className="px-3 py-2 text-right">Old</th>
+                <th className="px-3 py-2 text-right">New</th>
+                <th className="px-3 py-2 text-right">Used</th>
+                <th className="px-3 py-2 text-right">Rate</th>
+                <th className="px-3 py-2 text-right">Fee</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              <tr className="hover:bg-gray-50/50">
+                <td className="px-3 py-2 font-medium text-gray-700">Water</td>
+                <td className="px-3 py-2 text-right text-gray-600">{bill.old_water_unit}</td>
+                <td className="px-3 py-2 text-right text-gray-600">{bill.new_water_unit}</td>
+                <td className="px-3 py-2 text-right font-semibold text-blue-700">{waterUsage} units</td>
+                <td className="px-3 py-2 text-right text-gray-600">฿{formatCurrency(bill.water_rate)}</td>
+                <td className="px-3 py-2 text-right font-semibold text-blue-700">฿{formatCurrency(bill.water_fee)}</td>
+              </tr>
+              <tr className="hover:bg-gray-50/50">
+                <td className="px-3 py-2 font-medium text-gray-700">Electricity</td>
+                <td className="px-3 py-2 text-right text-gray-600">{bill.old_electric_unit}</td>
+                <td className="px-3 py-2 text-right text-gray-600">{bill.new_electric_unit}</td>
+                <td className="px-3 py-2 text-right font-semibold text-amber-700">{electricUsage} units</td>
+                <td className="px-3 py-2 text-right text-gray-600">฿{formatCurrency(bill.electric_rate)}</td>
+                <td className="px-3 py-2 text-right font-semibold text-amber-700">฿{formatCurrency(bill.electricity_fee)}</td>
+              </tr>
+              <tr className="hover:bg-gray-50/50">
+                <td className="px-3 py-2 font-medium text-gray-700">Common Fee</td>
+                <td className="px-3 py-2 text-right text-gray-400" colSpan={3}>—</td>
+                <td className="px-3 py-2 text-right text-gray-600">—</td>
+                <td className="px-3 py-2 text-right font-semibold text-teal-700">฿{formatCurrency(bill.common_fee)}</td>
+              </tr>
+              <tr className="hover:bg-gray-50/50">
+                <td className="px-3 py-2 font-medium text-gray-700">Rent Fee</td>
+                <td className="px-3 py-2 text-right text-gray-400" colSpan={3}>—</td>
+                <td className="px-3 py-2 text-right text-gray-600">—</td>
+                <td className="px-3 py-2 text-right font-semibold text-gray-900">฿{formatCurrency(bill.rent_fee)}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr className="bg-gray-50 font-bold">
+                <td className="px-3 py-2 text-gray-700">Total</td>
+                <td className="px-3 py-2 text-right text-gray-400" colSpan={4}></td>
+                <td className="px-3 py-2 text-right text-gray-900">฿{formatCurrency(bill.total_amount)}</td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -874,15 +907,13 @@ function ViewBillModal({
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
               Payment Slip
             </p>
-            <a
-              href={bill.bill_slip.slip_url}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => onPreviewSlip(bill.bill_slip!.slip_url)}
               className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
             >
-              <ExternalLink className="h-4 w-4" />
+              <Eye className="h-4 w-4" />
               View uploaded slip
-            </a>
+            </button>
           </div>
         )}
       </div>

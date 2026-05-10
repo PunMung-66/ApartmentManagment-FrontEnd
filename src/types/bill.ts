@@ -15,6 +15,12 @@ export interface Bill {
   electricity_fee: number
   common_fee: number
   total_amount: number
+  old_water_unit: number
+  new_water_unit: number
+  old_electric_unit: number
+  new_electric_unit: number
+  water_rate: number
+  electric_rate: number
   status: 'Unpaid' | 'WaitingApproval' | 'Paid' | 'Rejected'
   due_date: string
   created_at: string
