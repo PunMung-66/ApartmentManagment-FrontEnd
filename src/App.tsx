@@ -290,11 +290,7 @@ function App() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                     </>
-                  ) : (
-                    <div
-                      className={`flex h-full items-end bg-gradient-to-br ${room.gradient} p-5`}
-                    />
-                  )}
+                    ) : null}
                   <div className="absolute bottom-3 left-3 rounded-lg bg-white/20 backdrop-blur-sm px-3 py-1.5">
                     <p className="text-xs font-medium text-white">{room.size}</p>
                   </div>

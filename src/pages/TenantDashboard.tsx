@@ -86,7 +86,7 @@ export default function TenantDashboard() {
     try {
       const token = getCookie("token");
       const formData = new FormData();
-      formData.append("bill_id", uploadingBillId);
+      formData.append("bill_id", billId);
       formData.append("room_id", room.room_id);
       formData.append("slip", file);
 
