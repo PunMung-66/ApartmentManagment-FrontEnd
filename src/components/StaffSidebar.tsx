@@ -53,7 +53,7 @@ export function StaffSidebar({
             {!isSidebarCollapsed && (
               <div>
                 <h1 className="font-display text-lg font-bold text-gray-900 lg:text-base">
-                  Editorial Residence
+                  Yensabai
                 </h1>
                 <p className="mt-0.5 text-xs text-gray-500 lg:text-[11px]">
                   Staff Portal

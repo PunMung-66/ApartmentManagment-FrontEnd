@@ -232,7 +232,7 @@ export default function UtilityRates() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-display text-base font-bold text-gray-900">
-              Editorial Residence
+              Yensabai
             </h1>
             <p className="text-xs text-gray-500">Staff Portal</p>
           </div>
